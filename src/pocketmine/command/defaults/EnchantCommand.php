@@ -19,14 +19,16 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
+
 use pocketmine\command\CommandSender;
+
+
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\utils\TextFormat;
+
 
 class EnchantCommand extends VanillaCommand{
 
@@ -34,7 +36,7 @@ class EnchantCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.enchant.description",
-			"%commands.enchant.usage"
+			"%pocketmine.command.enchant.usage"
 		);
 		$this->setPermission("pocketmine.command.enchant");
 	}
@@ -46,7 +48,6 @@ class EnchantCommand extends VanillaCommand{
 
 		if(count($args) < 2){
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
 			return true;
 		}
 
@@ -57,21 +58,34 @@ class EnchantCommand extends VanillaCommand{
 			return true;
 		}
 
-		$enchantId = (int) $args[1];
+		$enchantId = $args[1];
 		$enchantLevel = isset($args[2]) ? (int) $args[2] : 1;
 
 		$enchantment = Enchantment::getEnchantment($enchantId);
 		if($enchantment->getId() === Enchantment::TYPE_INVALID){
-			$sender->sendMessage(new TranslationContainer("commands.enchant.notFound", [$enchantId]));
+			$enchantment = Enchantment::getEnchantmentByName($enchantId);
+			if($enchantment->getId() === Enchantment::TYPE_INVALID){
+	    		$sender->sendMessage(new TranslationContainer("commands.enchant.notFound", [$enchantment->getId()]));
+				return true;
+			}
+		}
+		$id = $enchantment->getId();
+		$maxLevel = Enchantment::getEnchantMaxLevel($id);
+		if($enchantLevel > $maxLevel or $enchantLevel <= 0){
+			$sender->sendMessage(new TranslationContainer("commands.enchant.maxLevel", [$maxLevel]));
 			return true;
 		}
-
 		$enchantment->setLevel($enchantLevel);
 
 		$item = $player->getInventory()->getItemInHand();
 
 		if($item->getId() <= 0){
 			$sender->sendMessage(new TranslationContainer("commands.enchant.noItem"));
+			return true;
+		}
+		
+		if(Enchantment::getEnchantAbility($item) === 0){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.enchant.cantEnchant"));
 			return true;
 		}
 

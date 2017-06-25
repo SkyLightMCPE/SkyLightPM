@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\tile;
 
 use pocketmine\nbt\tag\CompoundTag;
@@ -29,16 +27,15 @@ use pocketmine\nbt\tag\StringTag;
 
 class EnderChest extends Spawnable implements Nameable{
 
-
 	public function getName() : string{
 		return isset($this->namedtag->CustomName) ? $this->namedtag->CustomName->getValue() : "Ender Chest";
 	}
 
-	public function hasName() : bool{
+	public function hasName(){
 		return isset($this->namedtag->CustomName);
 	}
 
-	public function setName(string $str){
+	public function setName($str){
 		if($str === ""){
 			unset($this->namedtag->CustomName);
 			return;
@@ -48,7 +45,7 @@ class EnderChest extends Spawnable implements Nameable{
 	}
 
 	public function getSpawnCompound(){
-		$enderchest = new CompoundTag("", [
+		$c = new CompoundTag("", [
 			new StringTag("id", Tile::ENDER_CHEST),
 			new IntTag("x", (int) $this->x),
 			new IntTag("y", (int) $this->y),
@@ -56,9 +53,9 @@ class EnderChest extends Spawnable implements Nameable{
 		]);
 
 		if($this->hasName()){
-			$enderchest->CustomName = $this->namedtag->CustomName;
+			$c->CustomName = $this->namedtag->CustomName;
 		}
-
-		return $enderchest;
+		return $c;
 	}
+
 }

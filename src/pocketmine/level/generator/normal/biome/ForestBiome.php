@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level\generator\normal\biome;
 
 use pocketmine\block\Sapling;
@@ -59,7 +57,7 @@ class ForestBiome extends GrassyBiome{
 		}
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return $this->type === self::TYPE_BIRCH ? "Birch Forest" : "Forest";
 	}
 }

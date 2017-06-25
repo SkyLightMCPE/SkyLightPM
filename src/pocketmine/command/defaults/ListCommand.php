@@ -19,13 +19,12 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
+
 
 class ListCommand extends VanillaCommand{
 
@@ -33,7 +32,7 @@ class ListCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.list.description",
-			"%command.players.usage"
+			"%pocketmine.command.players.usage"
 		);
 		$this->setPermission("pocketmine.command.list");
 	}

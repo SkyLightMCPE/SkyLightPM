@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\utils;
 
 use LogLevel;
@@ -35,6 +33,27 @@ class MainLogger extends \AttachableThreadedLogger{
 	private $logResource;
 	/** @var MainLogger */
 	public static $logger = null;
+	
+	private $consoleCallback;
+
+	/** Extra Settings */
+	protected $write = false;
+
+	public $shouldSendMsg = "";
+	public $shouldRecordMsg = false;
+	private $lastGet = 0;
+
+	public function setSendMsg($b){
+		$this->shouldRecordMsg = $b;
+		$this->lastGet = time();
+	}
+
+	public function getMessages(){
+		$msg = $this->shouldSendMsg;
+		$this->shouldSendMsg = "";
+		$this->lastGet = time();
+		return $msg;
+	}
 
 	/**
 	 * @param string $logFile
@@ -61,39 +80,39 @@ class MainLogger extends \AttachableThreadedLogger{
 		return static::$logger;
 	}
 
-	public function emergency($message){
-		$this->send($message, \LogLevel::EMERGENCY, "EMERGENCY", TextFormat::RED);
+	public function emergency($message, $name = "EMERGENCY"){
+		$this->send($message, \LogLevel::EMERGENCY, $name, TextFormat::RED);
 	}
 
-	public function alert($message){
-		$this->send($message, \LogLevel::ALERT, "ALERT", TextFormat::RED);
+	public function alert($message, $name = "ALERT"){
+		$this->send($message, \LogLevel::ALERT, $name, TextFormat::RED);
 	}
 
-	public function critical($message){
-		$this->send($message, \LogLevel::CRITICAL, "CRITICAL", TextFormat::RED);
+	public function critical($message, $name = "CRITICAL"){
+		$this->send($message, \LogLevel::CRITICAL, $name, TextFormat::RED);
 	}
 
-	public function error($message){
-		$this->send($message, \LogLevel::ERROR, "ERROR", TextFormat::DARK_RED);
+	public function error($message, $name = "ERROR"){
+		$this->send($message, \LogLevel::ERROR, $name, TextFormat::DARK_RED);
 	}
 
-	public function warning($message){
-		$this->send($message, \LogLevel::WARNING, "WARNING", TextFormat::YELLOW);
+	public function warning($message, $name = "WARNING"){
+		$this->send($message, \LogLevel::WARNING, $name, TextFormat::YELLOW);
 	}
 
-	public function notice($message){
-		$this->send($message, \LogLevel::NOTICE, "NOTICE", TextFormat::AQUA);
+	public function notice($message, $name = "NOTICE"){
+		$this->send(TextFormat::BOLD . $message, \LogLevel::NOTICE, $name, TextFormat::AQUA);
 	}
 
-	public function info($message){
-		$this->send($message, \LogLevel::INFO, "INFO", TextFormat::WHITE);
+	public function info($message, $name = "INFO"){
+		$this->send($message, \LogLevel::INFO, $name, TextFormat::WHITE);
 	}
 
-	public function debug($message){
+	public function debug($message, $name = "DEBUG"){
 		if($this->logDebug === false){
 			return;
 		}
-		$this->send($message, \LogLevel::DEBUG, "DEBUG", TextFormat::GRAY);
+		$this->send($message, \LogLevel::DEBUG, $name, TextFormat::GRAY);
 	}
 
 	/**
@@ -135,11 +154,13 @@ class MainLogger extends \AttachableThreadedLogger{
 		}else{
 			$type = ($errno === E_ERROR or $errno === E_USER_ERROR) ? LogLevel::ERROR : (($errno === E_USER_WARNING or $errno === E_WARNING) ? LogLevel::WARNING : LogLevel::NOTICE);
 		}
-		$errno = $errorConversion[$errno] ?? $errno;
-		$errstr = preg_replace('/\s+/', ' ', trim($errstr));
+		$errno = isset($errorConversion[$errno]) ? $errorConversion[$errno] : $errno;
+		if(($pos = strpos($errstr, "\n")) !== false){
+			$errstr = substr($errstr, 0, $pos);
+		}
 		$errfile = \pocketmine\cleanPath($errfile);
 		$this->log($type, get_class($e) . ": \"$errstr\" ($errno) in \"$errfile\" at line $errline");
-		foreach(\pocketmine\getTrace(0, $trace) as $i => $line){
+		foreach(@\pocketmine\getTrace(1, $trace) as $i => $line){
 			$this->debug($line);
 		}
 	}
@@ -189,13 +210,27 @@ class MainLogger extends \AttachableThreadedLogger{
 			$threadName = (new \ReflectionClass($thread))->getShortName() . " thread";
 		}
 
-		$message = TextFormat::toANSI(TextFormat::AQUA . "[" . date("H:i:s", $now) . "] " . TextFormat::RESET . $color . "[" . $threadName . "/" . $prefix . "]:" . " " . $message . TextFormat::RESET);
+		if($this->shouldRecordMsg){
+			if((time() - $this->lastGet) >= 10) $this->shouldRecordMsg = false; // 10 secs timeout
+			else{
+				if(strlen($this->shouldSendMsg) >= 10000) $this->shouldSendMsg = "";
+				$this->shouldSendMsg .= $color . "|" . $prefix . "|" . trim($message, "\r\n") . "\n";
+			}
+		}
+
+    $message = TextFormat::toANSI(TextFormat::AQUA . "[" . date("H:i:s", $now) . "] " . TextFormat::RESET . $color . "[" . $threadName . "/" . $prefix . "]:" . " " . $message . TextFormat::RESET);
+	//$message = TextFormat::toANSI(TextFormat::AQUA . "[GenisysPro]->[" . date("H:i:s", $now) . "] " . TextFormat::RESET . $color . "[$prefix]:" . " " . $message . TextFormat::RESET);
+	//$message = TextFormat::toANSI(TextFormat::AQUA . "[" . date("H:i:s") . "] ". TextFormat::RESET . $color ."<".$prefix . ">" . " " . $message . TextFormat::RESET);
 		$cleanMessage = TextFormat::clean($message);
 
 		if(!Terminal::hasFormattingCodes()){
 			echo $cleanMessage . PHP_EOL;
 		}else{
 			echo $message . PHP_EOL;
+		}
+
+		if(isset($this->consoleCallback)){
+			call_user_func($this->consoleCallback);
 		}
 
 		if($this->attachment instanceof \ThreadedLoggerAttachment){
@@ -210,31 +245,70 @@ class MainLogger extends \AttachableThreadedLogger{
 		}
 	}
 
-	public function run(){
+	/*public function run(){
 		$this->shutdown = false;
-		$this->logResource = fopen($this->logFile, "a+b");
-		if(!is_resource($this->logResource)){
-			throw new \RuntimeException("Couldn't open log file");
-		}
+		if($this->write){
+			$this->logResource = fopen($this->logFile, "a+b");
+			if(!is_resource($this->logResource)){
+				throw new \RuntimeException("Couldn't open log file");
+			}
 
-		while($this->shutdown === false){
-			$this->synchronized(function(){
+			while($this->shutdown === false){
+				if(!$this->write) {
+					fclose($this->logResource);
+					break;
+				}
+				$this->synchronized(function(){
+					while($this->logStream->count() > 0){
+						$chunk = $this->logStream->shift();
+						fwrite($this->logResource, $chunk);
+					}
+
+					$this->wait(25000);
+				});
+			}
+
+			if($this->logStream->count() > 0){
 				while($this->logStream->count() > 0){
 					$chunk = $this->logStream->shift();
 					fwrite($this->logResource, $chunk);
 				}
+			}
 
-				$this->wait(25000);
+			fclose($this->logResource);
+		}
+	}*/
+
+	public function run(){
+		$this->shutdown = false;
+		while($this->shutdown === false){
+			$this->synchronized(function(){
+				while($this->logStream->count() > 0){
+					$chunk = $this->logStream->shift();
+					if($this->write){
+						$this->logResource = file_put_contents($this->logFile, $chunk, FILE_APPEND);
+					}
+				}
+
+				$this->wait(200000);
 			});
 		}
 
 		if($this->logStream->count() > 0){
 			while($this->logStream->count() > 0){
 				$chunk = $this->logStream->shift();
-				fwrite($this->logResource, $chunk);
+				if($this->write){
+					$this->logResource = file_put_contents($this->logFile, $chunk, FILE_APPEND);
+				}
 			}
 		}
+	}
 
-		fclose($this->logResource);
+	public function setWrite($write){
+		$this->write = $write;
+	}
+	
+	public function setConsoleCallback($callback){
+		$this->consoleCallback = $callback;
 	}
 }

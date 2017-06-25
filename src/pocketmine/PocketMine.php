@@ -2,29 +2,27 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
 
-declare(strict_types=1);
-
 namespace {
-	const INT32_MIN = -0x80000000;
-	const INT32_MAX = 0x7fffffff;
-
 	function safe_var_dump(){
 		static $cnt = 0;
 		foreach(func_get_args() as $var){
@@ -75,12 +73,11 @@ namespace pocketmine {
 	use pocketmine\utils\ServerKiller;
 	use pocketmine\utils\Terminal;
 	use pocketmine\utils\Utils;
-	use pocketmine\wizard\SetupWizard;
-	use raklib\RakLib;
+	use pocketmine\wizard\Installer;
 
-	const VERSION = "1.3dev";
-	const API_VERSION = "3.0.0";
-	const CODENAME = "Unleashed";
+	const VERSION = "1.1dev";
+	const API_VERSION = "3.0.1";
+	const CODENAME = "Diamonds";
 
 	/*
 	 * Startup code. Do not look at it, it may harm you.
@@ -88,6 +85,12 @@ namespace pocketmine {
 	 * This is the only non-class based file on this project.
 	 * Enjoy it as much as I did writing it. I don't want to do it again.
 	 */
+
+	if(\Phar::running(true) !== ""){
+		@define('pocketmine\PATH', \Phar::running(true) . "/");
+	}else{
+		@define('pocketmine\PATH', \getcwd() . DIRECTORY_SEPARATOR);
+	}
 
 	if(version_compare("7.0", PHP_VERSION) > 0){
 		echo "[CRITICAL] You must use PHP >= 7.0" . PHP_EOL;
@@ -101,34 +104,7 @@ namespace pocketmine {
 		exit(1);
 	}
 
-	error_reporting(-1);
-
-	set_error_handler(function($severity, $message, $file, $line){
-		if((error_reporting() & $severity)){
-			throw new \ErrorException($message, 0, $severity, $file, $line);
-		}else{ //stfu operator
-			return true;
-		}
-	});
-
-	if(!extension_loaded("phar")){
-		echo "[CRITICAL] Unable to find the Phar extension." . PHP_EOL;
-		echo "[CRITICAL] Please use the installer provided on the homepage." . PHP_EOL;
-		exit(1);
-	}
-
-	if(\Phar::running(true) !== ""){
-		define('pocketmine\PATH', \Phar::running(true) . "/");
-	}else{
-		define('pocketmine\PATH', realpath(getcwd()) . DIRECTORY_SEPARATOR);
-	}
-
 	if(!class_exists("ClassLoader", false)){
-		if(!is_file(\pocketmine\PATH . "src/spl/ClassLoader.php")){
-			echo "[CRITICAL] Unable to find the PocketMine-SPL library." . PHP_EOL;
-			echo "[CRITICAL] Please use provided builds or clone the repository recursively." . PHP_EOL;
-			exit(1);
-		}
 		require_once(\pocketmine\PATH . "src/spl/ClassLoader.php");
 		require_once(\pocketmine\PATH . "src/spl/BaseClassLoader.php");
 	}
@@ -138,23 +114,17 @@ namespace pocketmine {
 	$autoloader->addPath(\pocketmine\PATH . "src" . DIRECTORY_SEPARATOR . "spl");
 	$autoloader->register(true);
 
-	try{
-		if(!class_exists(RakLib::class)){
-			throw new \Exception;
-		}
-	}catch(\Exception $e){
-		echo "[CRITICAL] Unable to find the RakLib library." . PHP_EOL;
-		exit(1);
-	}
 
 	set_time_limit(0); //Who set it to 30 seconds?!?!
 
-	ini_set("allow_url_fopen", '1');
-	ini_set("display_errors", '1');
-	ini_set("display_startup_errors", '1');
+	gc_enable();
+	error_reporting(-1);
+	ini_set("allow_url_fopen", 1);
+	ini_set("display_errors", 1);
+	ini_set("display_startup_errors", 1);
 	ini_set("default_charset", "utf-8");
 
-	ini_set("memory_limit", '-1');
+	ini_set("memory_limit", -1);
 	define('pocketmine\START_TIME', microtime(true));
 
 	$opts = getopt("", ["data:", "plugins:", "no-wizard", "enable-profiler"]);
@@ -173,7 +143,7 @@ namespace pocketmine {
 	//Logger has a dependency on timezone, so we'll set it to UTC until we can get the actual timezone.
 	date_default_timezone_set("UTC");
 
-	$logger = new MainLogger(\pocketmine\DATA . "server.log");
+	$logger = new MainLogger(\pocketmine\DATA . "server.log", \pocketmine\ANSI);
 
 	if(!ini_get("date.timezone")){
 		if(($timezone = detect_system_timezone()) and date_default_timezone_set($timezone)){
@@ -205,7 +175,7 @@ namespace pocketmine {
 			$default_timezone = timezone_name_from_abbr($timezone);
 			ini_set("date.timezone", $default_timezone);
 			date_default_timezone_set($default_timezone);
-		}else{
+		} else {
 			date_default_timezone_set($timezone);
 		}
 	}
@@ -349,7 +319,7 @@ namespace pocketmine {
 				if(function_exists("posix_kill")){
 					posix_kill($pid, SIGKILL);
 				}else{
-					exec("kill -9 " . ((int) $pid) . " > /dev/null 2>&1");
+					exec("kill -9 " . ((int)$pid) . " > /dev/null 2>&1");
 				}
 		}
 	}
@@ -372,7 +342,7 @@ namespace pocketmine {
 		return -1;
 	}
 
-	function getTrace($start = 0, $trace = null){
+	function getTrace($start = 1, $trace = null){
 		if($trace === null){
 			if(function_exists("xdebug_get_function_stack")){
 				$trace = array_reverse(xdebug_get_function_stack());
@@ -393,7 +363,7 @@ namespace pocketmine {
 					$args = $trace[$i]["params"];
 				}
 				foreach($args as $name => $value){
-					$params .= (is_object($value) ? get_class($value) . " object" : gettype($value) . " " . (is_array($value) ? "Array()" : Utils::printable(@strval($value)))) . ", ";
+					$params .= (is_object($value) ? get_class($value) . " " . (method_exists($value, "__toString") ? $value->__toString() : "object") : gettype($value) . " " . (is_array($value) ? "Array()" : Utils::printable(@strval($value)))) . ", ";
 				}
 			}
 			$messages[] = "#$j " . (isset($trace[$i]["file"]) ? cleanPath($trace[$i]["file"]) : "") . "(" . (isset($trace[$i]["line"]) ? $trace[$i]["line"] : "") . "): " . (isset($trace[$i]["class"]) ? $trace[$i]["class"] . (($trace[$i]["type"] === "dynamic" or $trace[$i]["type"] === "->") ? "->" : "::") : "") . $trace[$i]["function"] . "(" . Utils::printable(substr($params, 0, -2)) . ")";
@@ -403,130 +373,131 @@ namespace pocketmine {
 	}
 
 	function cleanPath($path){
-		return str_replace(["\\", ".php", "phar://", str_replace(["\\", "phar://"], ["/", ""], \pocketmine\PATH), str_replace(["\\", "phar://"], ["/", ""], \pocketmine\PLUGIN_PATH)], ["/", "", "", "", ""], $path);
+		return rtrim(str_replace(["\\", ".php", "phar://", rtrim(str_replace(["\\", "phar://"], ["/", ""], \pocketmine\PATH), "/"), rtrim(str_replace(["\\", "phar://"], ["/", ""], \pocketmine\PLUGIN_PATH), "/")], ["/", "", "", "", ""], $path), "/");
 	}
 
-	$exitCode = 0;
+	$errors = 0;
 
-	do{
-		$errors = 0;
+	if(php_sapi_name() !== "cli"){
+		$logger->critical("You must run PocketMine-MP using the CLI.");
+		++$errors;
+	}
 
-		if(PHP_INT_SIZE < 8){
-			$logger->critical("Running PocketMine-MP with 32-bit systems/PHP is no longer supported. Please upgrade to a 64-bit system or use a 64-bit PHP binary.");
-			$exitCode = 1;
-			break;
-		}
+	if(!extension_loaded("sockets")){
+		$logger->critical("Unable to find the Socket extension.");
+		++$errors;
+	}
 
-		if(php_sapi_name() !== "cli"){
-			$logger->critical("You must run PocketMine-MP using the CLI.");
+	$pthreads_version = phpversion("pthreads");
+	if(substr_count($pthreads_version, ".") < 2){
+		$pthreads_version = "0.$pthreads_version";
+	}
+	if(version_compare($pthreads_version, "3.1.5") < 0){
+		$logger->critical("pthreads >= 3.1.5 is required, while you have $pthreads_version.");
+		++$errors;
+	}
+
+	if(!extension_loaded("uopz")){
+		//$logger->notice("Couldn't find the uopz extension. Some functions may be limited");
+	}
+
+	if(extension_loaded("pocketmine")){
+		if(version_compare(phpversion("pocketmine"), "0.0.1") < 0){
+			$logger->critical("You have the native PocketMine extension, but your version is lower than 0.0.1.");
+			++$errors;
+		}elseif(version_compare(phpversion("pocketmine"), "0.0.4") > 0){
+			$logger->critical("You have the native PocketMine extension, but your version is higher than 0.0.4.");
 			++$errors;
 		}
+	}
+	
+	if(extension_loaded("xdebug")){
+		$logger->warning("
 
-		$pthreads_version = phpversion("pthreads");
-		if(substr_count($pthreads_version, ".") < 2){
-			$pthreads_version = "0.$pthreads_version";
+
+	You are running PocketMine with xdebug enabled. This has a major impact on performance.
+
+		");
+	}
+
+	if(!extension_loaded("curl")){
+		$logger->critical("Unable to find the cURL extension.");
+		++$errors;
+	}
+
+	if(!extension_loaded("yaml")){
+		$logger->critical("Unable to find the YAML extension.");
+		++$errors;
+	}
+
+	if(!extension_loaded("zlib")){
+		$logger->critical("Unable to find the Zlib extension.");
+		++$errors;
+	}
+
+	if($errors > 0){
+		$logger->critical("Please update your PHP from itxtech.org/genisys/get/, or recompile PHP again.");
+		$logger->shutdown();
+		$logger->join();
+		exit(1); //Exit with error
+	}
+
+	if(file_exists(\pocketmine\PATH . ".git/refs/heads/master")){ //Found Git information!
+		define('pocketmine\GIT_COMMIT', strtolower(trim(file_get_contents(\pocketmine\PATH . ".git/refs/heads/master"))));
+	}else{
+		define('pocketmine\GIT_COMMIT', "0000000000000000000000000000000000000000");
+	}
+
+	@define("ENDIANNESS", (pack("d", 1) === "\77\360\0\0\0\0\0\0" ? Binary::BIG_ENDIAN : Binary::LITTLE_ENDIAN));
+	@define("INT32_MASK", is_int(0xffffffff) ? 0xffffffff : -1);
+	@ini_set("opcache.mmap_base", bin2hex(random_bytes(8))); //Fix OPCache address errors
+
+	if(!file_exists(\pocketmine\DATA . "server.properties") and !isset($opts["no-wizard"])){
+		$installer = new Installer();
+		if(!$installer->run()){
+			$logger->shutdown();
+			$logger->join();
+			exit(-1);
 		}
-		if(version_compare($pthreads_version, "3.1.5") < 0){
-			$logger->critical("pthreads >= 3.1.5 is required, while you have $pthreads_version.");
-			++$errors;
+	}
+
+	if(\Phar::running(true) === ""){
+		$logger->warning("Non-packaged Genisys installation detected, do not use on production.");
+	}
+
+	ThreadManager::init();
+	new Server($autoloader, $logger, \pocketmine\PATH, \pocketmine\DATA, \pocketmine\PLUGIN_PATH);
+
+	$logger->info("Stopping other threads");
+
+	$killer = new ServerKiller(8);
+	$killer->start();
+	usleep(10000); //Fixes ServerKiller not being able to start on single-core machines
+
+	$erroredThreads = 0;
+	foreach(ThreadManager::getInstance()->getAll() as $id => $thread){
+		$logger->debug("Stopping " . $thread->getThreadName() . " thread");
+		try{
+			$thread->quit();
+			$logger->debug($thread->getThreadName() . " thread stopped successfully.");
+		}catch(\ThreadException $e){
+			++$erroredThreads;
+			$logger->debug("Could not stop " . $thread->getThreadName() . " thread: " . $e->getMessage());
 		}
-
-		if(extension_loaded("pocketmine")){
-			if(version_compare(phpversion("pocketmine"), "0.0.1") < 0){
-				$logger->critical("You have the native PocketMine extension, but your version is lower than 0.0.1.");
-				++$errors;
-			}elseif(version_compare(phpversion("pocketmine"), "0.0.4") > 0){
-				$logger->critical("You have the native PocketMine extension, but your version is higher than 0.0.4.");
-				++$errors;
-			}
-		}
-
-		if(extension_loaded("xdebug")){
-			$logger->warning(PHP_EOL . PHP_EOL . PHP_EOL . "\tYou are running PocketMine with xdebug enabled. This has a major impact on performance." . PHP_EOL . PHP_EOL);
-		}
-
-		$extensions = [
-			"curl" => "cURL",
-			"json" => "JSON",
-			"mbstring" => "Multibyte String",
-			"yaml" => "YAML",
-			"sockets" => "Sockets",
-			"zlib" => "Zlib"
-		];
-
-		foreach($extensions as $ext => $name){
-			if(!extension_loaded($ext)){
-				$logger->critical("Unable to find the $name ($ext) extension.");
-				++$errors;
-			}
-		}
-
-		if($errors > 0){
-			$logger->critical("Please use the installer provided on the homepage, or recompile PHP again.");
-			$exitCode = 1;
-			break;
-		}
-
-		$gitHash = str_repeat("00", 20);
-#ifndef COMPILE
-		if(\Phar::running(true) === ""){
-			if(Utils::execute("git rev-parse HEAD", $out) === 0){
-				$gitHash = trim($out);
-				if(Utils::execute("git diff --quiet") === 1 or Utils::execute("git diff --cached --quiet") === 1){ //Locally-modified
-					$gitHash .= "-dirty";
-				}
-			}
-		}
-#endif
-		define('pocketmine\GIT_COMMIT', $gitHash);
-
-
-		@define("ENDIANNESS", (pack("d", 1) === "\77\360\0\0\0\0\0\0" ? Binary::BIG_ENDIAN : Binary::LITTLE_ENDIAN));
-		@define("INT32_MASK", is_int(0xffffffff) ? 0xffffffff : -1);
-		@ini_set("opcache.mmap_base", bin2hex(random_bytes(8))); //Fix OPCache address errors
-
-
-		if(!file_exists(\pocketmine\DATA . "server.properties") and !isset($opts["no-wizard"])){
-			$installer = new SetupWizard();
-			if(!$installer->run()){
-				$exitCode = -1;
-				break;
-			}
-		}
-
-		ThreadManager::init();
-		new Server($autoloader, $logger, \pocketmine\PATH, \pocketmine\DATA, \pocketmine\PLUGIN_PATH);
-
-		$logger->info("Stopping other threads");
-
-		$killer = new ServerKiller(8);
-		$killer->start();
-		usleep(10000); //Fixes ServerKiller not being able to start on single-core machines
-
-		$erroredThreads = 0;
-		foreach(ThreadManager::getInstance()->getAll() as $id => $thread){
-			$logger->debug("Stopping " . $thread->getThreadName() . " thread");
-			try{
-				$thread->quit();
-				$logger->debug($thread->getThreadName() . " thread stopped successfully.");
-			}catch(\ThreadException $e){
-				++$erroredThreads;
-				$logger->debug("Could not stop " . $thread->getThreadName() . " thread: " . $e->getMessage());
-			}
-		}
-
-		if($erroredThreads > 0){
-			if(\pocketmine\DEBUG > 1){
-				echo "Some threads could not be stopped, performing a force-kill" . PHP_EOL . PHP_EOL;
-			}
-			kill(getmypid());
-		}
-	}while(false);
+	}
 
 	$logger->shutdown();
 	$logger->join();
 
 	echo Terminal::$FORMAT_RESET . PHP_EOL;
 
-	exit($exitCode);
+	if($erroredThreads > 0){
+		if(\pocketmine\DEBUG > 1){
+			echo "Some threads could not be stopped, performing a force-kill" . PHP_EOL . PHP_EOL;
+		}
+		kill(getmypid());
+	}else{
+		exit(0);
+	}
+
 }

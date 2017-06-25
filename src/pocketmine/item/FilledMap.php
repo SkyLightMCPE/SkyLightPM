@@ -20,25 +20,29 @@
 */
 
 namespace pocketmine\item;
-
-
 use pocketmine\nbt\tag\StringTag;
-
-class FilledMap extends Item{
-
-	public function getMapId() : int{
-		$tag = $this->getNamedTagEntry("map_uuid");
-		if($tag instanceof StringTag){
-			return (int) $tag->getValue();
-		}
-
-		return -1;
+use pocketmine\nbt\tag\CompoundTag;
+class FilledMap extends Item {
+	public function __construct($meta = 0, $count = 1) {
+		parent::__construct(self::FILLED_MAP, $meta, $count, "Filled Map");
 	}
 
-	public function setMapId(int $id){
-		$tag = $this->getNamedTag();
-		$tag->map_uuid = new StringTag("map_uuid", (string) $id);
+	public function getMaxStackSize() : int {
+		return 1;
+	}
+
+	public function setMapId($id){
+
+		$tag = new CompoundTag("", [
+			"map_uuid" => new StringTag("map_uuid", $id),
+		]);
+
 		$this->setNamedTag($tag);
 	}
 
+	public function getMapId() : string {
+		return $this->getNamedTagEntry("map_uuid");
+	}
+
 }
+

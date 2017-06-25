@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\plugin;
 
 use pocketmine\command\Command;
@@ -74,14 +72,14 @@ abstract class PluginBase implements Plugin{
 	/**
 	 * @return bool
 	 */
-	final public function isEnabled(){
+	public final function isEnabled(){
 		return $this->isEnabled === true;
 	}
 
 	/**
 	 * @param bool $boolean
 	 */
-	final public function setEnabled($boolean = true){
+	public final function setEnabled($boolean = true){
 		if($this->isEnabled !== $boolean){
 			$this->isEnabled = $boolean;
 			if($this->isEnabled === true){
@@ -95,19 +93,19 @@ abstract class PluginBase implements Plugin{
 	/**
 	 * @return bool
 	 */
-	final public function isDisabled(){
+	public final function isDisabled(){
 		return $this->isEnabled === false;
 	}
 
-	final public function getDataFolder(){
+	public final function getDataFolder(){
 		return $this->dataFolder;
 	}
 
-	final public function getDescription(){
+	public final function getDescription(){
 		return $this->description;
 	}
 
-	final public function init(PluginLoader $loader, Server $server, PluginDescription $description, $dataFolder, $file){
+	public final function init(PluginLoader $loader, Server $server, PluginDescription $description, $dataFolder, $file){
 		if($this->initialized === false){
 			$this->initialized = true;
 			$this->loader = $loader;
@@ -130,7 +128,7 @@ abstract class PluginBase implements Plugin{
 	/**
 	 * @return bool
 	 */
-	final public function isInitialized(){
+	public final function isInitialized(){
 		return $this->initialized;
 	}
 
@@ -253,9 +251,8 @@ abstract class PluginBase implements Plugin{
 
 	public function saveDefaultConfig(){
 		if(!file_exists($this->configFile)){
-			return $this->saveResource("config.yml", false);
+			$this->saveResource("config.yml", false);
 		}
-		return false;
 	}
 
 	public function reloadConfig(){
@@ -269,21 +266,21 @@ abstract class PluginBase implements Plugin{
 	/**
 	 * @return Server
 	 */
-	final public function getServer(){
+	public final function getServer(){
 		return $this->server;
 	}
 
 	/**
 	 * @return string
 	 */
-	final public function getName(){
+	public final function getName(){
 		return $this->description->getName();
 	}
 
 	/**
 	 * @return string
 	 */
-	final public function getFullName(){
+	public final function getFullName(){
 		return $this->description->getFullName();
 	}
 

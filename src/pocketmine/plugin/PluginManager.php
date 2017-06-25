@@ -8,18 +8,25 @@
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
  * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
-
-declare(strict_types=1);
 
 namespace pocketmine\plugin;
 
@@ -142,35 +149,23 @@ class PluginManager{
 	 * @param string         $path
 	 * @param PluginLoader[] $loaders
 	 *
-	 * @return Plugin|null
+	 * @return Plugin
 	 */
 	public function loadPlugin($path, $loaders = null){
 		foreach(($loaders === null ? $this->fileAssociations : $loaders) as $loader){
 			if(preg_match($loader->getPluginFilters(), basename($path)) > 0){
 				$description = $loader->getPluginDescription($path);
 				if($description instanceof PluginDescription){
-					try{
-						$description->checkRequiredExtensions();
-					}catch(PluginException $ex){
-						$this->server->getLogger()->error($ex->getMessage());
-						return null;
-					}
+					if(($plugin = $loader->loadPlugin($path)) instanceof Plugin){
+						$this->plugins[$plugin->getDescription()->getName()] = $plugin;
 
-					try{
-						if(($plugin = $loader->loadPlugin($path)) instanceof Plugin){
-							$this->plugins[$plugin->getDescription()->getName()] = $plugin;
+						$pluginCommands = $this->parseYamlCommands($plugin);
 
-							$pluginCommands = $this->parseYamlCommands($plugin);
-
-							if(count($pluginCommands) > 0){
-								$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
-							}
-
-							return $plugin;
+						if(count($pluginCommands) > 0){
+							$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
 						}
-					}catch(\Throwable $e){
-						$this->server->getLogger()->logException($e);
-						return null;
+
+						return $plugin;
 					}
 				}
 			}
@@ -225,40 +220,72 @@ class PluginManager{
 							}
 
 							$compatible = false;
+							//Check multiple dependencies
+							foreach($description->getCompatibleApis() as $version){
+								//Format: majorVersion.minorVersion.patch (3.0.0)
+								//    or: majorVersion.minorVersion.patch-devBuild (3.0.0-alpha1)
+								if($version !== $this->server->getApiVersion()){
+									$pluginApi = array_pad(explode("-", $version), 2, ""); //0 = version, 1 = suffix (optional)
+									$serverApi = array_pad(explode("-", $this->server->getApiVersion()), 2, "");
 
-							if(!$this->server->getProperty("developer.incompatible-plugins.load", true)) {
-                                foreach ($description->getCompatibleApis() as $version) {
-                                    //Format: majorVersion.minorVersion.patch (3.0.0)
-                                    //    or: majorVersion.minorVersion.patch-devBuild (3.0.0-alpha1)
-                                    if ($version !== $this->server->getApiVersion()) {
-                                        $pluginApi = array_pad(explode("-", $version), 2, ""); //0 = version, 1 = suffix (optional)
-                                        $serverApi = array_pad(explode("-", $this->server->getApiVersion()), 2, "");
+									if(strtoupper($pluginApi[1]) !== strtoupper($serverApi[1])){ //Different release phase (alpha vs. beta) or phase build (alpha.1 vs alpha.2)
+										continue;
+									}
 
-                                        if (strtoupper($pluginApi[1]) !== strtoupper($serverApi[1])) { //Different release phase (alpha vs. beta) or phase build (alpha.1 vs alpha.2)
-                                            continue;
-                                        }
+									$pluginNumbers = array_map("intval", explode(".", $pluginApi[0]));
+									$serverNumbers = array_map("intval", explode(".", $serverApi[0]));
 
-                                        $pluginNumbers = array_map("intval", explode(".", $pluginApi[0]));
-                                        $serverNumbers = array_map("intval", explode(".", $serverApi[0]));
+									if($pluginNumbers[0] !== $serverNumbers[0]){ //Completely different API version
+										continue;
+									}
 
-                                        if ($pluginNumbers[0] !== $serverNumbers[0]) { //Completely different API version
-                                            continue;
-                                        }
+									if($pluginNumbers[1] > $serverNumbers[1]){ //If the plugin requires new API features, being backwards compatible
+										continue;
+									}
+								}
 
-                                        if ($pluginNumbers[1] > $serverNumbers[1]) { //If the plugin requires new API features, being backwards compatible
-                                            continue;
-                                        }
-                                    }
+								$compatible = true;
+								break;
+							}
 
-                                    $compatible = true;
-                                    break;
-                                }
-                            }else{
-							    $compatible = true;
-                            }
+							$compatiblegeniapi = false;
+							foreach($description->getCompatibleGeniApis() as $version){
+								//Format: majorVersion.minorVersion.patch
+								$version = array_map("intval", explode(".", $version));
+								$apiVersion = array_map("intval", explode(".", $this->server->getGeniApiVersion()));
+								//Completely different API version
+								if($version[0] > $apiVersion[0]){
+									continue;
+								}
+								//If the plugin uses new API
+								if($version[0] < $apiVersion[0]){
+									$compatiblegeniapi = true;
+									break;
+								}
+								//If the plugin requires new API features, being backwards compatible
+								if($version[1] > $apiVersion[1]){
+									continue;
+								}
+
+								if($version[1] == $apiVersion[1] and $version[2] > $apiVersion[2]){
+									continue;
+								}
+
+								$compatiblegeniapi = true;
+								break;
+							}
 
 							if($compatible === false){
-								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
+							 if($this->server->loadIncompatibleAPI === true){
+			     $this->server->getLogger()->debug("插件{$name}的API与服务器不符,但GenisysPro仍然加载了它");
+			    }else{
+			     $this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
+								 continue;
+			    }
+							}
+
+							if($compatiblegeniapi === false){
+								$this->server->getLogger()->error("Could not load plugin '{$description->getName()}': Incompatible GeniAPI version");
 								continue;
 							}
 
@@ -436,7 +463,7 @@ class PluginManager{
 			$this->defaultPerms[$permission->getName()] = $permission;
 			$this->dirtyPermissibles(false);
 		}
-		Timings::$permissionDefaultTimer->startTiming();
+		Timings::$permissionDefaultTimer->stopTiming();
 	}
 
 	/**
@@ -772,15 +799,8 @@ class PluginManager{
 		if($class->isAbstract()){
 			throw new PluginException($event . " is an abstract Event");
 		}
-
-		if(!$class->hasProperty("handlerList") or ($property = $class->getProperty("handlerList"))->getDeclaringClass()->getName() !== $event){
-			throw new PluginException($event . " does not have a valid handler list");
-		}
-		if(!$property->isStatic()){
-			throw new PluginException($event . " handlerList property is not static");
-		}
-		if(!$property->isPublic()){
-			throw new PluginException($event . " handlerList property is not public");
+		if($class->getProperty("handlerList")->getDeclaringClass()->getName() !== $event){
+			throw new PluginException($event . " does not have a handler list");
 		}
 
 		if(!$plugin->isEnabled()){
@@ -793,7 +813,7 @@ class PluginManager{
 	}
 
 	/**
-	 * @param string $event
+	 * @param $event
 	 *
 	 * @return HandlerList
 	 */

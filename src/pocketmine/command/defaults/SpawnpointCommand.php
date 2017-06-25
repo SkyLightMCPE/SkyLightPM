@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
@@ -36,7 +34,7 @@ class SpawnpointCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.spawnpoint.description",
-			"%commands.spawnpoint.usage"
+			"%pocketmine.command.spawnpoint.usage"
 		);
 		$this->setPermission("pocketmine.command.spawnpoint");
 	}

@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\player;
 
@@ -54,7 +52,7 @@ class PlayerInteractEvent extends PlayerEvent implements Cancellable{
 
 	/** @var \pocketmine\item\Item */
 	protected $item;
-
+	
 	protected $action;
 
 	public function __construct(Player $player, Item $item, Vector3 $block, $face, $action = PlayerInteractEvent::RIGHT_CLICK_BLOCK){

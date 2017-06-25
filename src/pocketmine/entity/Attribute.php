@@ -19,9 +19,9 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\entity;
+
+use pocketmine\Server;
 
 class Attribute{
 
@@ -53,8 +53,8 @@ class Attribute{
 
 	public static function init(){
 		self::addAttribute(self::ABSORPTION, "minecraft:absorption", 0.00, 340282346638528859811704183484516925440.00, 0.00);
-		self::addAttribute(self::SATURATION, "minecraft:player.saturation", 0.00, 20.00, 20.00);
-		self::addAttribute(self::EXHAUSTION, "minecraft:player.exhaustion", 0.00, 5.00, 0.0);
+		self::addAttribute(self::SATURATION, "minecraft:player.saturation", 0.00, 20.00, 5.00);
+		self::addAttribute(self::EXHAUSTION, "minecraft:player.exhaustion", 0.00, 5.00, 0.41);
 		self::addAttribute(self::KNOCKBACK_RESISTANCE, "minecraft:knockback_resistance", 0.00, 1.00, 0.00);
 		self::addAttribute(self::HEALTH, "minecraft:health", 0.00, 20.00, 20.00);
 		self::addAttribute(self::MOVEMENT_SPEED, "minecraft:movement", 0.00, 340282346638528859811704183484516925440.00, 0.10);
@@ -64,7 +64,6 @@ class Attribute{
 		self::addAttribute(self::EXPERIENCE_LEVEL, "minecraft:player.level", 0.00, 24791.00, 0.00);
 		self::addAttribute(self::EXPERIENCE, "minecraft:player.experience", 0.00, 1.00, 0.00);
 		//TODO: minecraft:luck (for fishing?)
-		//TODO: minecraft:fall_damage
 	}
 
 	/**
@@ -109,7 +108,7 @@ class Attribute{
 		return null;
 	}
 
-	private function __construct($id, $name, $minValue, $maxValue, $defaultValue, $shouldSend = true){
+	public function __construct($id, $name, $minValue, $maxValue, $defaultValue, $shouldSend = true){
 		$this->id = (int) $id;
 		$this->name = (string) $name;
 		$this->minValue = (float) $minValue;
@@ -168,18 +167,14 @@ class Attribute{
 		return $this;
 	}
 
-	public function resetToDefault(){
-		$this->setValue($this->getDefaultValue());
-	}
-
 	public function getValue(){
 		return $this->currentValue;
 	}
 
-	public function setValue($value, $fit = false, bool $forceSend = false){
+	public function setValue($value, bool $fit = true, bool $shouldSend = false){
 		if($value > $this->getMaxValue() or $value < $this->getMinValue()){
 			if(!$fit){
-				throw new \InvalidArgumentException("Value $value exceeds the range!");
+				Server::getInstance()->getLogger()->error("[Attribute / {$this->getName()}] Value $value exceeds the range!");
 			}
 			$value = min(max($value, $this->getMinValue()), $this->getMaxValue());
 		}
@@ -187,10 +182,11 @@ class Attribute{
 		if($this->currentValue != $value){
 			$this->desynchronized = true;
 			$this->currentValue = $value;
-		}elseif($forceSend){
-			$this->desynchronized = true;
 		}
 
+		if($shouldSend){
+			$this->desynchronized = true;
+		}
 		return $this;
 	}
 

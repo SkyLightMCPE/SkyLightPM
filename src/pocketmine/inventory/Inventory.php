@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * Handles the creation of virtual inventories or mapped to an InventoryHolder
  */
@@ -57,8 +55,8 @@ interface Inventory{
 	 * If a plugin refuses the update or $index is invalid, it'll return false
 	 * If a source Player is specified, it won't send a Inventory update to it
 	 *
-	 * @param int  $index
-	 * @param Item $item
+	 * @param int    $index
+	 * @param Item   $item
 	 *
 	 * @return bool
 	 */
@@ -70,11 +68,11 @@ interface Inventory{
 	 *
 	 * Returns the Items that did not fit.
 	 *
-	 * @param Item[] ...$slots
+	 * @param Item ...$item
 	 *
 	 * @return Item[]
 	 */
-	public function addItem(Item ...$slots);
+	public function addItem(...$slots);
 
 	/**
 	 * Checks if a given Item can be added to the inventory
@@ -89,11 +87,11 @@ interface Inventory{
 	 * Removes the given Item from the inventory.
 	 * It will return the Items that couldn't be removed.
 	 *
-	 * @param Item[] ...$slots
+	 * @param Item ...$item
 	 *
 	 * @return Item[]
 	 */
-	public function removeItem(Item ...$slots);
+	public function removeItem(...$slots);
 
 	/**
 	 * @return Item[]
@@ -163,7 +161,7 @@ interface Inventory{
 	/**
 	 * Will clear a specific slot
 	 *
-	 * @param int $index
+	 * @param int    $index
 	 *
 	 * @return bool
 	 */
@@ -214,8 +212,9 @@ interface Inventory{
 	public function onClose(Player $who);
 
 	/**
-	 * @param int  $index
-	 * @param Item $before
+	 * @param int    $index
+	 * @param Item   $before
+	 * @param bool   $send
 	 */
-	public function onSlotChange($index, $before);
+	public function onSlotChange($index, $before, $send);
 }

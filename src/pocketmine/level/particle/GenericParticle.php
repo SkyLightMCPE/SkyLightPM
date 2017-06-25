@@ -19,15 +19,13 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level\particle;
 
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\network\protocol\LevelEventPacket;
 
 class GenericParticle extends Particle{
-
+	
 	protected $id;
 	protected $data;
 
@@ -36,7 +34,7 @@ class GenericParticle extends Particle{
 		$this->id = $id & 0xFFF;
 		$this->data = $data;
 	}
-
+	
 	public function encode(){
 		$pk = new LevelEventPacket;
 		$pk->evid = LevelEventPacket::EVENT_ADD_PARTICLE_MASK | $this->id;
@@ -44,7 +42,7 @@ class GenericParticle extends Particle{
 		$pk->y = $this->y;
 		$pk->z = $this->z;
 		$pk->data = $this->data;
-
+		
 		return $pk;
 	}
 }

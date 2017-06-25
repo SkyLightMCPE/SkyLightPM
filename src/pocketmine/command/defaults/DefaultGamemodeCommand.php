@@ -8,18 +8,25 @@
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
  * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
-
-declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
@@ -27,13 +34,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Server;
 
+
 class DefaultGamemodeCommand extends VanillaCommand{
 
 	public function __construct($name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.defaultgamemode.description",
-			"%commands.defaultgamemode.usage"
+			"%pocketmine.command.defaultgamemode.usage"
 		);
 		$this->setPermission("pocketmine.command.defaultgamemode");
 	}
@@ -55,7 +63,7 @@ class DefaultGamemodeCommand extends VanillaCommand{
 			$sender->getServer()->setConfigInt("gamemode", $gameMode);
 			$sender->sendMessage(new TranslationContainer("commands.defaultgamemode.success", [Server::getGamemodeString($gameMode)]));
 		}else{
-			$sender->sendMessage("Unknown game mode");
+			$sender->sendMessage("You entered an unknown gamemode");
 		}
 
 		return true;

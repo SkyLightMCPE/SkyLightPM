@@ -207,7 +207,7 @@ class Threaded implements Traversable, Collectable{
 	 * @link http://www.php.net/manual/en/threaded.wait.php
 	 * @return bool A boolean indication of success
 	 */
-	public function wait($timeout = 0){}
+	public function wait($timeout){}
 
 	/**
 	 * @return int
@@ -369,7 +369,7 @@ class Worker extends Thread{
 	 * @link http://www.php.net/manual/en/worker.collect.php
 	 * @return void
 	 */
-	public function collect(callable $function = null){}
+	public function collect(callable $function){}
 }
 
 /**

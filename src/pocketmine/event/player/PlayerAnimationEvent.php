@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\player;
 
@@ -33,6 +31,7 @@ class PlayerAnimationEvent extends PlayerEvent implements Cancellable{
 	public static $handlerList = null;
 
 	const ARM_SWING = 1;
+	const WAKE_UP = 3;
 
 	private $animationType;
 

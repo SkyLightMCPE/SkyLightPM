@@ -19,15 +19,13 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level\particle;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\Item as ItemEntity;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
-use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
+use pocketmine\network\protocol\AddEntityPacket;
+use pocketmine\network\protocol\RemoveEntityPacket;
 
 class FloatingTextParticle extends Particle{
 	//TODO: HACK!
@@ -48,6 +46,14 @@ class FloatingTextParticle extends Particle{
 		$this->title = $title;
 	}
 
+	public function getText(){
+		return $this->text;
+	}
+
+	public function getTitle(){
+		return $this->title;
+	}
+
 	public function setText($text){
 		$this->text = $text;
 	}
@@ -55,7 +61,6 @@ class FloatingTextParticle extends Particle{
 	public function setTitle($title){
 		$this->title = $title;
 	}
-
 	public function isInvisible(){
 		return $this->invisible;
 	}
@@ -71,7 +76,7 @@ class FloatingTextParticle extends Particle{
 			$this->entityId = Entity::$entityCount++;
 		}else{
 			$pk0 = new RemoveEntityPacket();
-			$pk0->entityUniqueId = $this->entityId;
+			$pk0->eid = $this->entityId;
 
 			$p[] = $pk0;
 		}
@@ -79,7 +84,7 @@ class FloatingTextParticle extends Particle{
 		if(!$this->invisible){
 
 			$pk = new AddEntityPacket();
-			$pk->entityRuntimeId = $this->entityId;
+			$pk->eid = $this->entityId;
 			$pk->type = ItemEntity::NETWORK_ID;
 			$pk->x = $this->x;
 			$pk->y = $this->y - 0.75;

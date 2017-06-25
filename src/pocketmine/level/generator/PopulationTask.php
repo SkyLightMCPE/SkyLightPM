@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level\generator;
 
 use pocketmine\level\format\Chunk;
@@ -28,6 +26,7 @@ use pocketmine\level\Level;
 use pocketmine\level\SimpleChunkManager;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
+
 
 class PopulationTask extends AsyncTask{
 
@@ -50,8 +49,14 @@ class PopulationTask extends AsyncTask{
 		$this->levelId = $level->getId();
 		$this->chunk = $chunk->fastSerialize();
 
-		foreach($level->getAdjacentChunks($chunk->getX(), $chunk->getZ()) as $i => $c){
-			$this->{"chunk$i"} = $c !== null ? $c->fastSerialize() : null;
+		for($i = 0; $i < 9; ++$i){
+			if($i === 4){
+				continue;
+			}
+			$xx = -1 + $i % 3;
+			$zz = -1 + (int) ($i / 3);
+			$ck = $level->getChunk($chunk->getX() + $xx, $chunk->getZ() + $zz, false);
+			$this->{"chunk$i"} = $ck !== null ? $ck->fastSerialize() : null;
 		}
 	}
 

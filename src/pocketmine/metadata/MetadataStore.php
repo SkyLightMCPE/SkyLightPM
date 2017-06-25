@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * Saves extra data on runtime for different items
  */
@@ -138,5 +136,5 @@ abstract class MetadataStore{
 	 *
 	 * @throws \InvalidArgumentException
 	 */
-	abstract public function disambiguate(Metadatable $subject, $metadataKey);
+	public abstract function disambiguate(Metadatable $subject, $metadataKey);
 }

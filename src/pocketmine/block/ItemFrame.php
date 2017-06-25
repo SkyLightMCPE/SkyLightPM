@@ -2,24 +2,22 @@
 
 /*
  *
- *  ____			_		_   __  __ _				  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___	  |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|	 |_|  |_|_|
+ *  _____   _____   __   _   _   _____  __    __  _____
+ * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
+ * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
+ * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
+ * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
+ * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author iTX Technologies
+ * @link https://itxtech.org
  *
- *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\block;
 
@@ -39,17 +37,16 @@ class ItemFrame extends Flowable{
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Item Frame";
 	}
 
-	public function canBeActivated(){
+	public function canBeActivated() : bool{
 		return true;
 	}
 
 	public function onActivate(Item $item, Player $player = null){
-		$tile = $this->level->getTile($this);
-		if(!($tile instanceof TileItemFrame)){
+		if(!(($tile = $this->level->getTile($this)) instanceof TileItemFrame)){
 			$nbt = new CompoundTag("", [
 				new StringTag("id", Tile::ITEM_FRAME),
 				new IntTag("x", $this->x),
@@ -69,6 +66,9 @@ class ItemFrame extends Flowable{
 				$frameItem->setCount(1);
 				$item->setCount($item->getCount() - 1);
 				$tile->setItem($frameItem);
+				if($item->getId() === Item::FILLED_MAP){
+					$tile->SetMapID($item->getMapId());
+				}
 				if($player instanceof Player and $player->isSurvival()){
 					$player->getInventory()->setItemInHand($item->getCount() <= 0 ? Item::get(Item::AIR) : $item);
 				}
@@ -79,8 +79,7 @@ class ItemFrame extends Flowable{
 	}
 
 	public function onBreak(Item $item){
-		$tile = $this->level->getTile($this);
-		if($tile instanceof TileItemFrame){
+		if(($tile = $this->level->getTile($this)) instanceof TileItemFrame){
 			//TODO: add events
 			if(lcg_value() <= $tile->getItemDropChance() and $tile->getItem()->getId() !== Item::AIR){
 				$this->level->dropItem($tile->getBlock(), $tile->getItem());
@@ -141,7 +140,7 @@ class ItemFrame extends Flowable{
 
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		return [
 			[Item::ITEM_FRAME, 0, 1]
 		];

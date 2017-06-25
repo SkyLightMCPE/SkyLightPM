@@ -19,12 +19,11 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level;
 
 use pocketmine\math\Vector3;
 use pocketmine\utils\MainLogger;
+
 
 class Position extends Vector3{
 
@@ -48,20 +47,16 @@ class Position extends Vector3{
 		return new Position($pos->x, $pos->y, $pos->z, $level);
 	}
 
-	/**
-	 * Return a Position instance
-	 * 
-	 * @return Position
-	 */
-	public function asPosition() : Position{
-		return new Position($this->x, $this->y, $this->z, $this->level);
+	public function add($x, $y = 0, $z = 0){
+		if($x instanceof Vector3){
+			return new Position($this->x + $x->x, $this->y + $x->y, $this->z + $x->z, $this->level);
+		}else{
+			return new Position($this->x + $x, $this->y + $y, $this->z + $z, $this->level);
+		}
 	}
-	
+
 	/**
-	 * Returns the target Level, or null if the target is not valid.
-	 * If a reference exists to a Level which is closed, the reference will be destroyed and null will be returned.
-	 *
-	 * @return Level|null
+	 * @return Level
 	 */
 	public function getLevel(){
 		if($this->level !== null and $this->level->isClosed()){
@@ -110,7 +105,9 @@ class Position extends Vector3{
 	 * @throws LevelException
 	 */
 	public function getSide($side, $step = 1){
-		assert($this->isValid());
+		if(!$this->isValid()){
+			throw new LevelException("Undefined Level reference");
+		}
 
 		return Position::fromObject(parent::getSide($side, $step), $this->level);
 	}
@@ -132,5 +129,14 @@ class Position extends Vector3{
 		$this->z = $z;
 		return $this;
 	}
+
+	public function fromObjectAdd(Vector3 $pos, $x, $y, $z){
+		if($pos instanceof Position){
+			$this->level = $pos->level;
+		}
+		parent::fromObjectAdd($pos, $x, $y, $z);
+		return $this;
+	}
+
 
 }

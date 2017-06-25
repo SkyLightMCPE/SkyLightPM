@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\tile;
 
 use pocketmine\event\block\SignChangeEvent;
@@ -37,13 +35,13 @@ class Sign extends Spawnable{
 		if(!isset($nbt->Text1)){
 			$nbt->Text1 = new StringTag("Text1", "");
 		}
-		if(!isset($nbt->Text2)){
+		if(!isset($nbt->Text2) or !($nbt->Text2 instanceof StringTag)){
 			$nbt->Text2 = new StringTag("Text2", "");
 		}
-		if(!isset($nbt->Text3)){
+		if(!isset($nbt->Text3) or !($nbt->Text3 instanceof StringTag)){
 			$nbt->Text3 = new StringTag("Text3", "");
 		}
-		if(!isset($nbt->Text4)){
+		if(!isset($nbt->Text4) or !($nbt->Text4 instanceof StringTag)){
 			$nbt->Text4 = new StringTag("Text4", "");
 		}
 

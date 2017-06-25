@@ -19,11 +19,11 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
-class Tripwire extends Flowable{
+use pocketmine\item\Tool;
+
+class Tripwire extends Transparent{
 
 	protected $id = self::TRIPWIRE;
 
@@ -31,7 +31,20 @@ class Tripwire extends Flowable{
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Tripwire";
 	}
+
+	public function getToolType(){
+		return Tool::TYPE_SHEARS;
+	}
+
+	public function getHardness(){
+		return 0;
+	}
+
+	public function getResistance(){
+		return 0;
+	}
+
 }

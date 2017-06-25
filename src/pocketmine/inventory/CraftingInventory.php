@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\inventory;
 
 /**
@@ -39,7 +37,7 @@ class CraftingInventory extends BaseInventory{
 	 * @param Inventory       $resultInventory
 	 * @param InventoryType   $inventoryType
 	 *
-	 * @throws \Exception
+	 * @throws \Throwable
 	 */
 	public function __construct(InventoryHolder $holder, Inventory $resultInventory, InventoryType $inventoryType){
 		if($inventoryType->getDefaultTitle() !== "Crafting"){

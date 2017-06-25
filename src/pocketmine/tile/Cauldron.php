@@ -2,25 +2,21 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *  _____   _____   __   _   _   _____  __    __  _____
+ * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
+ * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
+ * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
+ * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
+ * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author iTX Technologies
+ * @link https://itxtech.org
  *
- *
-*/
-
-/*
- * Copied from @beito123's FlowerPot plugin
  */
 
 namespace pocketmine\tile;
@@ -37,10 +33,10 @@ use pocketmine\utils\Color;
 class Cauldron extends Spawnable{
 
 	public function __construct(Level $level, CompoundTag $nbt){
-		if(!isset($nbt->PotionId)){
+		if(!isset($nbt->PotionId) or !($nbt->PotionId instanceof ShortTag)){
 			$nbt->PotionId = new ShortTag("PotionId", 0xffff);
 		}
-		if(!isset($nbt->SplashPotion)){
+		if(!isset($nbt->SplashPotion) or !($nbt->SplashPotion instanceof ByteTag)){
 			$nbt->SplashPotion = new ByteTag("SplashPotion", 0);
 		}
 		if(!isset($nbt->Items) or !($nbt->Items instanceof ListTag)){
@@ -55,12 +51,7 @@ class Cauldron extends Spawnable{
 
 	public function setPotionId($potionId){
 		$this->namedtag->PotionId = new ShortTag("PotionId", $potionId);
-
-		$this->spawnToAll();
-		if($this->chunk){
-			$this->chunk->setChanged();
-			$this->level->clearChunkCache($this->chunk->getX(), $this->chunk->getZ());
-		}
+		$this->onChanged();
 	}
 
 	public function hasPotion(){
@@ -73,24 +64,16 @@ class Cauldron extends Spawnable{
 
 	public function setSplashPotion($bool){
 		$this->namedtag->SplashPotion = new ByteTag("SplashPotion", ($bool == true) ? 1 : 0);
-
-		$this->spawnToAll();
-		if($this->chunk){
-			$this->chunk->setChanged();
-			$this->level->clearChunkCache($this->chunk->getX(), $this->chunk->getZ());
-		}
+		$this->onChanged();
 	}
 
-	/**
-	 * @return null|Color
-	 */
-	public function getCustomColor(){
+	public function getCustomColor(){//
 		if($this->isCustomColor()){
 			$color = $this->namedtag["CustomColor"];
 			$green = ($color >> 8) & 0xff;
 			$red = ($color >> 16) & 0xff;
 			$blue = ($color) & 0xff;
-			return new Color($red, $green, $blue);
+			return Color::getRGB($red, $green, $blue);
 		}
 		return null;
 	}
@@ -118,24 +101,14 @@ class Cauldron extends Spawnable{
 			$color = ($r << 16 | $g << 8 | $b) & 0xffffff;
 		}
 		$this->namedtag->CustomColor = new IntTag("CustomColor", $color);
-
-		$this->spawnToAll();
-		if($this->chunk){
-			$this->chunk->setChanged();
-			$this->level->clearChunkCache($this->chunk->getX(), $this->chunk->getZ());
-		}
+		$this->onChanged();
 	}
 
 	public function clearCustomColor(){
 		if(isset($this->namedtag->CustomColor)){
 			unset($this->namedtag->CustomColor);
 		}
-
-		$this->spawnToAll();
-		if($this->chunk){
-			$this->chunk->setChanged();
-			$this->level->clearChunkCache($this->chunk->getX(), $this->chunk->getZ());
-		}
+		$this->onChanged();
 	}
 
 	public function getSpawnCompound(){

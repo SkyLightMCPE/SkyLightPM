@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
@@ -34,8 +32,8 @@ class TellCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.tell.description",
-			"%commands.message.usage",
-			["w", "msg"]
+			"%pocketmine.command.tell.usage",
+			["w", "whisper", "msg", "m"]
 		);
 		$this->setPermission("pocketmine.command.tell");
 	}
@@ -61,9 +59,8 @@ class TellCommand extends VanillaCommand{
 		}
 
 		if($player instanceof Player){
-			$sender->sendMessage("[{$sender->getName()} -> {$player->getDisplayName()}] " . implode(" ", $args));
-			$name = $sender instanceof Player ? $sender->getDisplayName() : $sender->getName();
-			$player->sendMessage("[$name -> {$player->getName()}] " . implode(" ", $args));
+			$sender->sendMessage("[".$sender->getName()." -> " . $player->getDisplayName() . "] " . implode(" ", $args));
+			$player->sendMessage("[" . ($sender instanceof Player ? $sender->getDisplayName() : $sender->getName()) . " -> ".$player->getName()."] " . implode(" ", $args));
 		}else{
 			$sender->sendMessage(new TranslationContainer("commands.generic.player.notFound"));
 		}

@@ -13,8 +13,6 @@
  *
  */
 
-declare(strict_types=1);
-
 namespace raklib\server;
 
 use raklib\Binary;
@@ -33,28 +31,33 @@ class ServerHandler{
 		$this->instance = $instance;
 	}
 
-	public function sendEncapsulated(string $identifier, EncapsulatedPacket $packet, int $flags = RakLib::PRIORITY_NORMAL){
+	public function sendEncapsulated($identifier, EncapsulatedPacket $packet, $flags = RakLib::PRIORITY_NORMAL){
 		$buffer = chr(RakLib::PACKET_ENCAPSULATED) . chr(strlen($identifier)) . $identifier . chr($flags) . $packet->toBinary(true);
 		$this->server->pushMainToThreadPacket($buffer);
 	}
 
-	public function sendRaw(string $address, int $port, string $payload){
+	public function sendRaw($address, $port, $payload){
 		$buffer = chr(RakLib::PACKET_RAW) . chr(strlen($address)) . $address . Binary::writeShort($port) . $payload;
 		$this->server->pushMainToThreadPacket($buffer);
 	}
 
-	public function closeSession(string $identifier, string $reason){
+	public function closeSession($identifier, $reason){
 		$buffer = chr(RakLib::PACKET_CLOSE_SESSION) . chr(strlen($identifier)) . $identifier . chr(strlen($reason)) . $reason;
 		$this->server->pushMainToThreadPacket($buffer);
 	}
 
-	public function sendOption(string $name, $value){
+	public function sendOption($name, $value){
 		$buffer = chr(RakLib::PACKET_SET_OPTION) . chr(strlen($name)) . $name . $value;
 		$this->server->pushMainToThreadPacket($buffer);
 	}
 
-	public function blockAddress(string $address, int $timeout){
+	public function blockAddress($address, $timeout){
 		$buffer = chr(RakLib::PACKET_BLOCK_ADDRESS) . chr(strlen($address)) . $address . Binary::writeInt($timeout);
+		$this->server->pushMainToThreadPacket($buffer);
+	}
+
+	public function unblockAddress($address){
+		$buffer = chr(RakLib::PACKET_UNBLOCK_ADDRESS) . chr(strlen($address)) . $address;
 		$this->server->pushMainToThreadPacket($buffer);
 	}
 
@@ -62,9 +65,11 @@ class ServerHandler{
 		$buffer = chr(RakLib::PACKET_SHUTDOWN);
 		$this->server->pushMainToThreadPacket($buffer);
 		$this->server->shutdown();
-		$this->server->synchronized(function(RakLibServer $server){
-			$server->wait(20000);
-		}, $this->server);
+		$this->server->synchronized(function(){
+			if($this->server !== null){
+				$this->server->wait(20000);
+			}
+		});
 		$this->server->join();
 	}
 
@@ -73,7 +78,7 @@ class ServerHandler{
 		$this->server->pushMainToThreadPacket("\x7f"); //RakLib::PACKET_EMERGENCY_SHUTDOWN
 	}
 
-	protected function invalidSession(string $identifier){
+	protected function invalidSession($identifier){
 		$buffer = chr(RakLib::PACKET_INVALID_SESSION) . chr(strlen($identifier)) . $identifier;
 		$this->server->pushMainToThreadPacket($buffer);
 	}
@@ -81,8 +86,8 @@ class ServerHandler{
 	/**
 	 * @return bool
 	 */
-	public function handlePacket() : bool{
-		if(($packet = $this->server->readThreadToMainPacket()) !== null and strlen($packet) > 0){
+	public function handlePacket(){
+		if(strlen($packet = $this->server->readThreadToMainPacket()) > 0){
 			$id = ord($packet{0});
 			$offset = 1;
 			if($id === RakLib::PACKET_ENCAPSULATED){

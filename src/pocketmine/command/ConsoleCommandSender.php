@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command;
 
 use pocketmine\event\TextContainer;
@@ -102,7 +100,7 @@ class ConsoleCommandSender implements CommandSender{
 	}
 
 	/**
-	 * @param TextContainer|string $message
+	 * @param string $message
 	 */
 	public function sendMessage($message){
 		if($message instanceof TextContainer){
@@ -119,7 +117,7 @@ class ConsoleCommandSender implements CommandSender{
 	/**
 	 * @return string
 	 */
-	public function getName(){
+	public function getName() : string{
 		return "CONSOLE";
 	}
 

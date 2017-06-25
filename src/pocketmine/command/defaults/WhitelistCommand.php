@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
@@ -34,7 +32,8 @@ class WhitelistCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.whitelist.description",
-			"%commands.whitelist.usage"
+			"%pocketmine.command.whitelist.usage",
+			["wl"]
 		);
 		$this->setPermission("pocketmine.command.whitelist.reload;pocketmine.command.whitelist.enable;pocketmine.command.whitelist.disable;pocketmine.command.whitelist.list;pocketmine.command.whitelist.add;pocketmine.command.whitelist.remove");
 	}

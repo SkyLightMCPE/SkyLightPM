@@ -19,13 +19,11 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level\particle;
 
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\network\protocol\LevelEventPacket;
 
 class DestroyBlockParticle extends Particle{
 

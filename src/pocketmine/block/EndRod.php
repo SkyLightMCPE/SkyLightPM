@@ -2,94 +2,72 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
 
 namespace pocketmine\block;
 
-
-use pocketmine\item\Item;
-use pocketmine\math\AxisAlignedBB;
-use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\item\Item;
 
 class EndRod extends Flowable{
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($face === Vector3::SIDE_UP or $face === Vector3::SIDE_DOWN){
-			$this->meta = $face;
-		}else{
-			$this->meta = $face ^ 0x01;
-		}
-		if($target instanceof EndRod and $target->getDamage() === $this->meta){
-			$this->meta ^= 0x01;
-		}
+	protected $id = self::END_ROD;
 
-		return $this->level->setBlock($block, $this, true, true);
-	}
-
-	public function isSolid(){
-		return true;
+	public function __construct($meta = 0){
+		$this->meta = $meta;
 	}
 
 	public function getLightLevel(){
 		return 14;
 	}
 
-	protected function recalculateBoundingBox(){
-		$m = $this->meta & ~0x01;
-		$width = 0.375;
-
-		switch($m){
-			case 0x00: //up/down
-				return new AxisAlignedBB(
-					$this->x + $width,
-					$this->y,
-					$this->z + $width,
-					$this->x + 1 - $width,
-					$this->y + 1,
-					$this->z + 1 - $width
-				);
-			case 0x02: //north/south
-				return new AxisAlignedBB(
-					$this->x,
-					$this->y + $width,
-					$this->z + $width,
-					$this->x + 1,
-					$this->y + 1 - $width,
-					$this->z + 1 - $width
-				);
-			case 0x04: //east/west
-				return new AxisAlignedBB(
-					$this->x + $width,
-					$this->y + $width,
-					$this->z,
-					$this->x + 1 - $width,
-					$this->y + 1 - $width,
-					$this->z + 1
-				);
-		}
-
-		return null;
+	public function getName() : string {
+		return "End Rod";
 	}
 
-	public function getDrops(Item $item){
+	public function getResistance(){
+        return 0;
+    }
+	
+	public function getHardness(){
+        return 0;
+    }
+
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+			$faces = [
+				0 => 0,
+				1 => 1,
+				2 => 3,
+				3 => 2,
+				4 => 5,
+				5 => 4,
+			];
+			$this->meta = ($target->getId() === self::END_ROD && $faces[$face] == $target->getDamage()) ? Vector3::getOppositeSide($faces[$face]) : $faces[$face];
+			$this->getLevel()->setBlock($block, $this, true, true);
+			return true;
+		}
+
+	public function getDrops(Item $item) : array {
 		return [
-			Item::get($this->getId(), 0, 1)
+			[$this->id, 0, 1],
 		];
 	}
 

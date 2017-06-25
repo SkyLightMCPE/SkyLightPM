@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\player;
 
@@ -49,8 +47,8 @@ class PlayerCreationEvent extends Event{
 
 	/**
 	 * @param SourceInterface $interface
-	 * @param                 Player::class   $baseClass
-	 * @param                 Player::class   $playerClass
+	 * @param Player::class   $baseClass
+	 * @param Player::class   $playerClass
 	 * @param mixed           $clientId
 	 * @param string          $address
 	 * @param int             $port

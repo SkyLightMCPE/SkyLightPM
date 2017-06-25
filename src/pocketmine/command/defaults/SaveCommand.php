@@ -19,13 +19,12 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
+
 
 class SaveCommand extends VanillaCommand{
 
@@ -33,7 +32,7 @@ class SaveCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.save.description",
-			"%commands.save.usage"
+			"%pocketmine.command.save.usage"
 		);
 		$this->setPermission("pocketmine.command.save.perform");
 	}

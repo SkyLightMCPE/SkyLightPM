@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\permission;
 
 use pocketmine\utils\MainLogger;
@@ -41,7 +39,7 @@ class BanEntry{
 		$this->creationDate = new \DateTime();
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return $this->name;
 	}
 

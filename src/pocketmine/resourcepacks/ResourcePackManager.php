@@ -8,19 +8,25 @@
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
  * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
+ *  _____            _               _____
+ * / ____|          (_)             |  __ \
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                         __/ |
+ *                        |___/
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
-
-declare(strict_types=1);
-
 
 namespace pocketmine\resourcepacks;
 
@@ -48,19 +54,15 @@ class ResourcePackManager{
 	/** @var ResourcePack[] */
 	private $uuidList = [];
 
-	/**
-	 * @param Server $server
-	 * @param string $path Path to resource-packs directory.
-	 */
 	public function __construct(Server $server, string $path){
 		$this->server = $server;
 		$this->path = $path;
 
 		if(!file_exists($this->path)){
-			$this->server->getLogger()->debug("Resource packs path $path does not exist, creating directory");
+			$this->server->getLogger()->debug($this->server->getLanguage()->translateString("pocketmine.resourcepacks.createFolder", [$path]));
 			mkdir($this->path);
 		}elseif(!is_dir($this->path)){
-			throw new \InvalidArgumentException("Resource packs path $path exists and is not a directory");
+			throw new \InvalidArgumentException($this->server->getLanguage()->translateString("pocketmine.resourcepacks.notFolder", [$path]));
 		}
 
 		if(!file_exists($this->path . "resource_packs.yml")){
@@ -71,7 +73,7 @@ class ResourcePackManager{
 
 		$this->serverForceResources = (bool) $this->resourcePacksConfig->get("force_resources", false);
 
-		$this->server->getLogger()->info("Loading resource packs...");
+		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.resourcepacks.load"));
 
 		foreach($this->resourcePacksConfig->get("resource_stack", []) as $pos => $pack){
 			try{
@@ -80,16 +82,18 @@ class ResourcePackManager{
 					$newPack = null;
 					//Detect the type of resource pack.
 					if(is_dir($packPath)){
-						$this->server->getLogger()->warning("Skipped resource entry $pack due to directory resource packs currently unsupported");
+						$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.resourcepacks.folderNotSupported", [$path]));
 					}else{
 						$info = new \SplFileInfo($packPath);
 						switch($info->getExtension()){
 							case "zip":
+								$newPack = new ZippedResourcePack($packPath);
+								break;
 							case "mcpack":
 								$newPack = new ZippedResourcePack($packPath);
 								break;
 							default:
-								$this->server->getLogger()->warning("Skipped resource entry $pack due to format not recognized");
+								$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.resourcepacks.unsupportedType", [$path]));
 								break;
 						}
 					}
@@ -99,18 +103,17 @@ class ResourcePackManager{
 						$this->uuidList[$newPack->getPackId()] = $newPack;
 					}
 				}else{
-					$this->server->getLogger()->warning("Skipped resource entry $pack due to file or directory not found");
+					$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.resourcepacks.packNotFound", [$path]));
 				}
 			}catch(\Throwable $e){
 				$this->server->getLogger()->logException($e);
 			}
 		}
 
-		$this->server->getLogger()->debug("Successfully loaded " . count($this->resourcePacks) . " resource packs");
+		$this->server->getLogger()->debug($this->server->getLanguage()->translateString("pocketmine.resourcepacks.loadFinished", [count($this->resourcePacks)]));
 	}
 
 	/**
-	 * Returns whether players must accept resource packs in order to join.
 	 * @return bool
 	 */
 	public function resourcePacksRequired() : bool{
@@ -118,7 +121,6 @@ class ResourcePackManager{
 	}
 
 	/**
-	 * Returns an array of resource packs in use, sorted in order of priority.
 	 * @return ResourcePack[]
 	 */
 	public function getResourceStack() : array{
@@ -126,9 +128,8 @@ class ResourcePackManager{
 	}
 
 	/**
-	 * Returns the resource pack matching the specified UUID string, or null if the ID was not recognized.
-	 *
 	 * @param string $id
+	 *
 	 * @return ResourcePack|null
 	 */
 	public function getPackById(string $id){
@@ -136,7 +137,6 @@ class ResourcePackManager{
 	}
 
 	/**
-	 * Returns an array of pack IDs for packs currently in use.
 	 * @return string[]
 	 */
 	public function getPackIdList() : array{

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\inventory;
 
 use pocketmine\utils\UUID;
@@ -38,6 +36,4 @@ interface Recipe{
 	 * @return UUID
 	 */
 	public function getId();
-
-	public function setId(UUID $id);
 }

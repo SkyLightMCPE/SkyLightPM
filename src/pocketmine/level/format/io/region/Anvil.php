@@ -19,9 +19,10 @@
  *
 */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace pocketmine\level\format\io\region;
+
 
 use pocketmine\level\format\Chunk;
 use pocketmine\level\format\io\ChunkException;
@@ -33,6 +34,7 @@ use pocketmine\nbt\tag\{
 };
 use pocketmine\Player;
 use pocketmine\utils\MainLogger;
+
 
 class Anvil extends McRegion{
 
@@ -46,8 +48,8 @@ class Anvil extends McRegion{
 		$nbt->V = new ByteTag("V", 1);
 		$nbt->LastUpdate = new LongTag("LastUpdate", 0); //TODO
 		$nbt->InhabitedTime = new LongTag("InhabitedTime", 0); //TODO
-		$nbt->TerrainPopulated = new ByteTag("TerrainPopulated", $chunk->isPopulated() ? 1 : 0);
-		$nbt->LightPopulated = new ByteTag("LightPopulated", $chunk->isLightPopulated() ? 1 : 0);
+		$nbt->TerrainPopulated = new ByteTag("TerrainPopulated", $chunk->isPopulated());
+		$nbt->LightPopulated = new ByteTag("LightPopulated", $chunk->isLightPopulated());
 
 		$nbt->Sections = new ListTag("Sections", []);
 		$nbt->Sections->setTagType(NBT::TAG_Compound);
@@ -56,7 +58,7 @@ class Anvil extends McRegion{
 			if($subChunk->isEmpty()){
 				continue;
 			}
-			$nbt->Sections[++$subChunks] = new CompoundTag("", [
+			$nbt->Sections[++$subChunks] = new CompoundTag(null, [
 				"Y"          => new ByteTag("Y", $y),
 				"Blocks"     => new ByteArrayTag("Blocks", ChunkUtils::reorderByteArray($subChunk->getBlockIdArray())), //Generic in-memory chunks are currently always XZY
 				"Data"       => new ByteArrayTag("Data", ChunkUtils::reorderNibbleArray($subChunk->getBlockDataArray())),
@@ -101,7 +103,7 @@ class Anvil extends McRegion{
 	public function nbtDeserialize(string $data){
 		$nbt = new NBT(NBT::BIG_ENDIAN);
 		try{
-			$nbt->readCompressed($data);
+			$nbt->readCompressed($data, ZLIB_ENCODING_DEFLATE);
 
 			$chunk = $nbt->getData();
 
@@ -154,10 +156,6 @@ class Anvil extends McRegion{
 
 	public static function getProviderName() : string{
 		return "anvil";
-	}
-
-	public static function getPcWorldFormatVersion() : int{
-		return 19133; //anvil
 	}
 
 	public function getWorldHeight() : int{

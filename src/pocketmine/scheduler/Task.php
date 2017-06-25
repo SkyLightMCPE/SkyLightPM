@@ -19,13 +19,8 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\scheduler;
 
-/**
- * WARNING! Plugins that create tasks MUST extend PluginTask
- */
 abstract class Task{
 
 	/** @var TaskHandler */
@@ -34,14 +29,14 @@ abstract class Task{
 	/**
 	 * @return TaskHandler
 	 */
-	final public function getHandler(){
+	public final function getHandler(){
 		return $this->taskHandler;
 	}
 
 	/**
 	 * @return int
 	 */
-	final public function getTaskId(){
+	public final function getTaskId(){
 		if($this->taskHandler !== null){
 			return $this->taskHandler->getTaskId();
 		}
@@ -52,7 +47,7 @@ abstract class Task{
 	/**
 	 * @param TaskHandler $taskHandler
 	 */
-	final public function setHandler($taskHandler){
+	public final function setHandler($taskHandler){
 		if($this->taskHandler === null or $taskHandler === null){
 			$this->taskHandler = $taskHandler;
 		}
@@ -65,7 +60,7 @@ abstract class Task{
 	 *
 	 * @return void
 	 */
-	abstract public function onRun($currentTick);
+	public abstract function onRun($currentTick);
 
 	/**
 	 * Actions to execute if the Task is cancelled

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -37,7 +35,7 @@ use pocketmine\tile\Tile;
 
 class MobHead extends Flowable{
 
-	protected $id = self::MOB_HEAD_BLOCK;
+	protected $id = self::SKULL_BLOCK;
 
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -47,7 +45,7 @@ class MobHead extends Flowable{
 		return 1;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Mob Head";
 	}
 
@@ -108,7 +106,7 @@ class MobHead extends Flowable{
 		return parent::onUpdate($type);
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		$tile = $this->level->getTile($this);
 		if($tile instanceof SkullTile){
 			return [

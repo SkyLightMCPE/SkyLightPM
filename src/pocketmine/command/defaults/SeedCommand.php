@@ -19,13 +19,12 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
+
 
 class SeedCommand extends VanillaCommand{
 
@@ -33,7 +32,7 @@ class SeedCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.seed.description",
-			"%commands.seed.usage"
+			"%pocketmine.command.seed.usage"
 		);
 		$this->setPermission("pocketmine.command.seed");
 	}

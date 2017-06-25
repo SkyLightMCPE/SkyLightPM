@@ -19,12 +19,11 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\inventory;
 
+use pocketmine\block\TrappedChest;
 use pocketmine\level\Level;
-use pocketmine\network\mcpe\protocol\BlockEventPacket;
+use pocketmine\network\protocol\BlockEventPacket;
 use pocketmine\Player;
 use pocketmine\tile\Chest;
 
@@ -38,6 +37,18 @@ class ChestInventory extends ContainerInventory{
 	 */
 	public function getHolder(){
 		return $this->holder;
+	}
+
+	public function getContents($withAir = false){
+		if($withAir){
+			$contents = [];
+			for($i = 0; $i < $this->getSize(); ++$i){
+				$contents[$i] = $this->getItem($i);
+			}
+
+			return $contents;
+		}
+		return parent::getContents();
 	}
 
 	public function onOpen(Player $who){
@@ -54,9 +65,29 @@ class ChestInventory extends ContainerInventory{
 				$level->addChunkPacket($this->getHolder()->getX() >> 4, $this->getHolder()->getZ() >> 4, $pk);
 			}
 		}
+
+		if($this->getHolder()->getLevel() instanceof Level){
+			/** @var TrappedChest $block */
+			$block = $this->getHolder()->getBlock();
+			if($block instanceof TrappedChest){
+				if(!$block->isActivated()){
+					$block->activate();
+				}
+			}
+		}
 	}
 
 	public function onClose(Player $who){
+		if($this->getHolder()->getLevel() instanceof Level){
+			/** @var TrappedChest $block */
+			$block = $this->getHolder()->getBlock();
+			if($block instanceof TrappedChest){
+				if($block->isActivated()){
+					$block->deactivate();
+				}
+			}
+		}
+
 		if(count($this->getViewers()) === 1){
 			$pk = new BlockEventPacket();
 			$pk->x = $this->getHolder()->getX();

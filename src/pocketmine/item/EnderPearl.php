@@ -2,22 +2,19 @@
 
 /*
  *
- *   _____       _             _   _____  ______      ____       _        
- *  / ____|     (_)           | | |  __ \|  ____|    |  _ \     | |       
- * | (___  _ __  _  __ _  ___ | |_| |__) | |__ ______| |_) | ___| |_ __ _ 
- *  \___ \| '_ \| |/ _` |/ _ \| __|  ___/|  __|______|  _ < / _ \ __/ _` |
- *  ____) | |_) | | (_| | (_) | |_| |    | |____     | |_) |  __/ || (_| |
- * |_____/| .__/|_|\__, |\___/ \__|_|    |______|    |____/ \___|\__\__,_|
- *        | |       __/ |                                                 
- *        |_|      |___/      
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author SpigotPE-Beta Team
- * @link http://github.com/SpigotPE-Beta
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
  *
  *
 */
@@ -27,10 +24,10 @@ namespace pocketmine\item;
 class EnderPearl extends Item{
 
 	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::ENDER_PEARL, 0, $count, "Ender Pearl");
+		parent::__construct(Item::ENDER_PEARL, $meta, $count, "Ender Pearl");
 	}
 
-	public function getMaxStackSize(){
+	public function getMaxStackSize() : int{
 		return 16;
 	}
 

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\block\Block;
@@ -28,8 +26,8 @@ use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\level\particle\AngryVillagerParticle;
-use pocketmine\level\particle\BlockForceFieldParticle;
 use pocketmine\level\particle\BubbleParticle;
+use pocketmine\level\particle\BlockForceFieldParticle;
 use pocketmine\level\particle\CriticalParticle;
 use pocketmine\level\particle\DustParticle;
 use pocketmine\level\particle\EnchantmentTableParticle;
@@ -124,17 +122,16 @@ class ParticleCommand extends VanillaCommand{
 		return true;
 	}
 
+
 	/**
-	 * @param string   $name
-	 *
-	 * @param Vector3  $pos
-	 * @param float    $xd
-	 * @param float    $yd
-	 * @param float    $zd
-	 * @param int|null $data
-	 *
+	 * @param         $name
+	 * @param Vector3 $pos
+	 * @param         $xd
+	 * @param         $yd
+	 * @param         $zd
+	 * @param         $data
 	 * @return Particle
-	 */
+     */
 	private function getParticle($name, Vector3 $pos, $xd, $yd, $zd, $data){
 		switch($name){
 			case "explode":
@@ -179,12 +176,12 @@ class ParticleCommand extends VanillaCommand{
 				return new ItemBreakParticle($pos, Item::get(Item::SLIMEBALL));
 			case "itembreak":
 				if($data !== null and $data !== 0){
-					return new ItemBreakParticle($pos, Item::get($data));
+					return new ItemBreakParticle($pos, $data);
 				}
 				break;
 			case "terrain":
 				if($data !== null and $data !== 0){
-					return new TerrainParticle($pos, Block::get($data));
+					return new TerrainParticle($pos, $data);
 				}
 				break;
 			case "heart":

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
@@ -36,7 +34,8 @@ class GamemodeCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.gamemode.description",
-			"%commands.gamemode.usage"
+			"%pocketmine.command.gamemode.usage",
+			["gm"]
 		);
 		$this->setPermission("pocketmine.command.gamemode");
 	}
@@ -52,7 +51,7 @@ class GamemodeCommand extends VanillaCommand{
 			return false;
 		}
 
-		$gameMode = Server::getGamemodeFromString($args[0]);
+		$gameMode = (int) Server::getGamemodeFromString($args[0]);
 
 		if($gameMode === -1){
 			$sender->sendMessage("Unknown game mode");
@@ -74,18 +73,16 @@ class GamemodeCommand extends VanillaCommand{
 			return true;
 		}
 
-		$target->setGamemode($gameMode);
-		if($gameMode !== $target->getGamemode()){
-			$sender->sendMessage("Game mode change for " . $target->getName() . " failed!");
+		if($target->setGamemode($gameMode) == false){
+			$sender->sendMessage(TextFormat::RED . "Game mode change for " . $target->getName() . " failed!");
 		}else{
 			if($target === $sender){
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.self", ['blame', 'mojang', Server::getGamemodeString($gameMode)]));
+				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.self", [' ', ' ', Server::getGamemodeString($gameMode)]));
 			}else{
 				$target->sendMessage(new TranslationContainer("gameMode.changed"));
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.other", ['blame mojang', $target->getName(), Server::getGamemodeString($gameMode)]));
+				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.other", [$target->getName(), Server::getGamemodeString($gameMode)]));
 			}
 		}
-
 		return true;
 	}
 }

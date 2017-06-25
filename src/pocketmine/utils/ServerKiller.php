@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\utils;
 
 use pocketmine\Thread;
@@ -34,7 +32,7 @@ class ServerKiller extends Thread{
 	}
 
 	public function run(){
-		$start = time();
+		$start = time() + 1;
 		$this->synchronized(function(){
 			$this->wait($this->time * 1000000);
 		});

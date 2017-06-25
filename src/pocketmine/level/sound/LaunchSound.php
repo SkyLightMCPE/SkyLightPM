@@ -19,12 +19,10 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level\sound;
 
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\network\protocol\LevelEventPacket;
 
 class LaunchSound extends GenericSound{
 	public function __construct(Vector3 $pos, $pitch = 0){

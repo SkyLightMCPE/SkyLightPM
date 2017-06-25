@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\inventory;
 
 use pocketmine\entity\Human;
@@ -28,23 +26,24 @@ use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\nbt\tag\ListTag;
-use pocketmine\network\mcpe\protocol\BlockEventPacket;
+use pocketmine\network\protocol\BlockEventPacket;
 use pocketmine\Player;
 
 class EnderChestInventory extends ContainerInventory{
-	 
+
+	/** @var Human|Player */
 	private $owner;
 
 	public function __construct(Human $owner, $contents = null){
 		$this->owner = $owner;
-		parent::__construct(new FakeBlockMenu($this, $owner), InventoryType::get(InventoryType::ENDER_CHEST));
+		parent::__construct(new FakeBlockMenu($this, $owner->getPosition()), InventoryType::get(InventoryType::ENDER_CHEST));
 
 		if($contents !== null){
-			if($contents instanceof ListTag){
- 			foreach($contents as $item){
- 				$this->setItem($item["Slot"], Item::nbtDeserialize($item));
- 			}
- 		}else{
+			if($contents instanceof ListTag){ //Saved data to be loaded into the inventory
+				foreach($contents as $item){
+					$this->setItem($item["Slot"], Item::nbtDeserialize($item));
+				}
+			}else{
 				throw new \InvalidArgumentException("Expecting ListTag, received " . gettype($contents));
 			}
 		}
@@ -53,13 +52,22 @@ class EnderChestInventory extends ContainerInventory{
 	public function getOwner(){
 		return $this->owner;
 	}
- 
+
+	/**
+	 * Set the fake block menu's position to a valid tile position
+	 * and send the inventory window to the owner
+	 *
+	 * @param Position $pos
+	 */
 	public function openAt(Position $pos){
 		$this->getHolder()->setComponents($pos->x, $pos->y, $pos->z);
 		$this->getHolder()->setLevel($pos->getLevel());
 		$this->owner->addWindow($this);
 	}
- 
+
+	/**
+	 * @return FakeBlockMenu
+	 */
 	public function getHolder(){
 		return $this->holder;
 	}
@@ -96,4 +104,4 @@ class EnderChestInventory extends ContainerInventory{
 		parent::onClose($who);
 	}
 
-} 
+}
