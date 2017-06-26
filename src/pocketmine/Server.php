@@ -1600,7 +1600,7 @@ class Server{
 			$version = new VersionString($this->getPocketMineVersion());
 			$this->version = $version;
 
-			$this->about();
+//			$this->about();
 
 			$this->logger->info("Loading properties and configuration...");
 			if(!file_exists($this->dataPath . "pocketmine.yml")){
