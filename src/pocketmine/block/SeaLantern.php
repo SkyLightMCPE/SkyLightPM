@@ -7,7 +7,7 @@
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
  * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
- *
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,15 +15,16 @@
  *
  * @author Pocketmine Team
  * @link http://www.pocketmine.net/
- *
+ * 
  *
 */
 
 namespace pocketmine\block;
 
+
 use pocketmine\item\Item;
 
-class SeaLantern extends Solid{
+class SeaLantern extends Transparent{
 
 	protected $id = self::SEA_LANTERN;
 
@@ -31,19 +32,19 @@ class SeaLantern extends Solid{
 		$this->meta = $meta;
 	}
 
+	public function getLightLevel(){
+		return 15;
+	}
+
 	public function getName() : string{
-		return "Sea Lantern";
+        return "Sea Lantern";
 	}
 
 	public function getHardness(){
 		return 0.3;
 	}
 
-	public function getLightLevel(){
-		return 15;
-	}
-
-	public function getDrops(Item $item) : array{
+	public function getDrops(Item $item) : array {
 		return [
 			[Item::PRISMARINE_CRYSTALS, 0, 3],
 		];

@@ -22,9 +22,9 @@
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
+use pocketmine\item\enchantment\Enchantment;
 
 class Cobweb extends Flowable{
 
@@ -44,6 +44,10 @@ class Cobweb extends Flowable{
 
 	public function getHardness() {
 		return 4;
+	}
+
+	public function diffusesSkyLight() : bool{
+		return true;
 	}
 
 	public function getToolType(){

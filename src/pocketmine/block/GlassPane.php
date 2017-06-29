@@ -22,8 +22,8 @@
 namespace pocketmine\block;
 
 
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
+use pocketmine\item\enchantment\Enchantment;
 
 class GlassPane extends Thin{
 

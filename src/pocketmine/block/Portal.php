@@ -23,8 +23,8 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\math\Vector3;
 
 class Portal extends Transparent{
 

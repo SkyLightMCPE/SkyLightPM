@@ -22,9 +22,9 @@
 namespace pocketmine\block;
 
 use pocketmine\event\block\LeavesDecayEvent;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -69,6 +69,10 @@ class Leaves extends Transparent{
 			self::JUNGLE => "Jungle Leaves",
 		];
 		return $names[$this->meta & 0x03];
+	}
+
+	public function diffusesSkyLight() : bool{
+		return true;
 	}
 
 	private function findLog(Block $pos, array $visited, $distance, &$check, $fromSide = null){
@@ -140,7 +144,7 @@ class Leaves extends Transparent{
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if(($this->meta & 0b00001100) === 0){
 				$this->meta |= 0x08;
-				$this->getLevel()->setBlock($this, $this, false, false, true);
+				$this->getLevel()->setBlock($this, $this, true, false);
 			}
 		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
 			if(($this->meta & 0b00001100) === 0x08){

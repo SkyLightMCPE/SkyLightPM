@@ -21,6 +21,7 @@
 
 namespace pocketmine\block;
 
+use pocketmine\Player;
 use pocketmine\entity\IronGolem;
 use pocketmine\entity\SnowGolem;
 use pocketmine\item\Item;
@@ -29,7 +30,6 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\ListTag;
-use pocketmine\Player;
 
 class Pumpkin extends Solid{
 
@@ -62,7 +62,6 @@ class Pumpkin extends Solid{
 		$this->getLevel()->setBlock($block, $this, true, true);
 		if($player != null) {
 			$level = $this->getLevel();
-			if($player->getServer()->allowSnowGolem) {
 				$block0 = $level->getBlock($block->add(0,-1,0));
 				$block1 = $level->getBlock($block->add(0,-2,0));
 				if($block0->getId() == Item::SNOW_BLOCK and $block1->getId() == Item::SNOW_BLOCK) {
@@ -70,25 +69,23 @@ class Pumpkin extends Solid{
 					$level->setBlock($block0, new Air());
 					$level->setBlock($block1, new Air());
 					$golem = new SnowGolem($player->getLevel(), new CompoundTag("", [
-						"Pos" => new ListTag("Pos", [
+						new ListTag("Pos", [
 							new DoubleTag("", $this->x),
 							new DoubleTag("", $this->y),
 							new DoubleTag("", $this->z)
 						]),
-						"Motion" => new ListTag("Motion", [
+						new ListTag("Motion", [
 							new DoubleTag("", 0),
 							new DoubleTag("", 0),
 							new DoubleTag("", 0)
 						]),
-						"Rotation" => new ListTag("Rotation", [
+						new ListTag("Rotation", [
 							new FloatTag("", 0),
 							new FloatTag("", 0)
 						]),
 					]));
 					$golem->spawnToAll();
 				}
-			}
-			if($player->getServer()->allowIronGolem) {
 				$block0 = $level->getBlock($block->add(0,-1,0));
 				$block1 = $level->getBlock($block->add(0,-2,0));
 				$block2 = $level->getBlock($block->add(-1,-1,0));
@@ -107,17 +104,17 @@ class Pumpkin extends Solid{
 					$level->setBlock($block0, new Air());
 					$level->setBlock($block1, new Air());
 					$golem = new IronGolem($player->getLevel(), new CompoundTag("", [
-						"Pos" => new ListTag("Pos", [
+						new ListTag("Pos", [
 							new DoubleTag("", $this->x),
 							new DoubleTag("", $this->y),
 							new DoubleTag("", $this->z)
 						]),
-						"Motion" => new ListTag("Motion", [
+						new ListTag("Motion", [
 							new DoubleTag("", 0),
 							new DoubleTag("", 0),
 							new DoubleTag("", 0)
 						]),
-						"Rotation" => new ListTag("Rotation", [
+						new ListTag("Rotation", [
 							new FloatTag("", 0),
 							new FloatTag("", 0)
 						]),
@@ -125,7 +122,6 @@ class Pumpkin extends Solid{
 					$golem->spawnToAll();
 				}
 			}
-		}
 
 		return true;
 	}

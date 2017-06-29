@@ -26,10 +26,11 @@ use pocketmine\level\Level;
 use pocketmine\level\sound\DoorSound;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\network\protocol\LevelEventPacket;
 use pocketmine\Player;
 
 
-abstract class Door extends Transparent implements ElectricalAppliance{
+abstract class Door extends Transparent{
 
 	public function canBeActivated() : bool {
 		return true;
@@ -287,7 +288,7 @@ abstract class Door extends Transparent implements ElectricalAppliance{
 					unset($players[$player->getLoaderId()]);
 				}
 
-				$this->level->addSound(new DoorSound($this));
+				$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR);
 				return true;
 			}
 
@@ -299,7 +300,7 @@ abstract class Door extends Transparent implements ElectricalAppliance{
 			if($player instanceof Player){
 				unset($players[$player->getLoaderId()]);
 			}
-			$this->level->addSound(new DoorSound($this));
+			$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR);
 		}
 
 		return true;

@@ -23,9 +23,10 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\level\sound\DoorSound;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\network\protocol\LevelEventPacket;
 use pocketmine\Player;
+use pocketmine\level\sound\DoorSound;
 
 class Trapdoor extends Transparent{
 
@@ -152,7 +153,7 @@ class Trapdoor extends Transparent{
 	public function onActivate(Item $item, Player $player = \null){
 		$this->meta ^= 0b00001000;
 		$this->getLevel()->setBlock($this, $this, true);
-		$this->level->addSound(new DoorSound($this));
+		$this->getLevel()->broadcastLevelEvent($player, LevelEventPacket::EVENT_SOUND_DOOR);
 		return true;
 	}
 

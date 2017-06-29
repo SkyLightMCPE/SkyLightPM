@@ -28,6 +28,7 @@ use pocketmine\level\Level;
 use pocketmine\level\particle\SmokeParticle;
 use pocketmine\level\sound\FizzSound;
 use pocketmine\math\Vector3;
+use pocketmine\network\protocol\LevelEventPacket;
 
 abstract class Liquid extends Transparent{
 
@@ -469,7 +470,7 @@ abstract class Liquid extends Transparent{
 	 * @param Vector3 $pos
 	 */
 	protected function triggerLavaMixEffects(Vector3 $pos){
-		$this->getLevel()->addSound(new FizzSound($pos->add(0.5, 0.5, 0.5), 2.5 + mt_rand(0, 1000) / 1000 * 0.8));
+		$this->getLevel()->broadcastLevelEvent($pos,LevelEventPacket::EVENT_SOUND_FIZZ, 2.5 + mt_rand(0, 1000) / 1000 * 0.8);
 
 		for($i = 0; $i < 8; ++$i){
 			$this->getLevel()->addParticle(new SmokeParticle($pos->add(mt_rand(0, 80) / 100, 0.5, mt_rand(0, 80) / 100)));

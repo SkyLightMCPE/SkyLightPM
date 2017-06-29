@@ -21,7 +21,7 @@
 
 namespace pocketmine\block;
 
-class DetectorRail extends PoweredRail{
+class DetectorRail extends Solid{
 
     protected $id = self::DETECTOR_RAIL;
 

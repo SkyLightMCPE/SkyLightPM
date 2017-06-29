@@ -21,9 +21,9 @@
 
 namespace pocketmine\block;
 
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
+use pocketmine\item\enchantment\Enchantment;
 
 class Ice extends Transparent{
 
@@ -39,6 +39,10 @@ class Ice extends Transparent{
 
 	public function getHardness() {
 		return 0.5;
+	}
+
+	public function getLightFilter() : int{
+		return 2;
 	}
 
 	public function getToolType(){

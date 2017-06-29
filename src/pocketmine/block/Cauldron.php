@@ -26,20 +26,18 @@ use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerGlassBottleEvent;
 use pocketmine\item\Armor;
 use pocketmine\item\Item;
-use pocketmine\item\Potion;
 use pocketmine\item\Tool;
-use pocketmine\level\sound\ExplodeSound;
-use pocketmine\level\sound\GraySplashSound;
-use pocketmine\level\sound\SpellSound;
-use pocketmine\level\sound\SplashSound;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\item\Potion;
+use pocketmine\network\protocol\LevelEventPacket;
+use pocketmine\network\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\ShortTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\tile\Cauldron as TileCauldron;
 use pocketmine\tile\Tile;
 use pocketmine\utils\Color;
@@ -85,7 +83,7 @@ class Cauldron extends Solid{
 			}
 		}
 
-		$tile = Tile::createTile("Cauldron", $this->getLevel(), $nbt);
+		$tile = Tile::createTile("Cauldron", $this->getLevel(), $nbt);//
 		$this->getLevel()->setBlock($block, $this, true, true);
 		return true;
 	}
@@ -138,7 +136,7 @@ class Cauldron extends Solid{
 						$this->meta = 0;//empty
 						$this->getLevel()->setBlock($this, $this, true);
 						$tile->clearCustomColor();
-						$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
+						$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_SPLASH);
 					}
 				}elseif($item->getDamage() === 8){//water bucket
 					if($this->isFull() and !$tile->isCustomColor() and !$tile->hasPotion()){
@@ -157,12 +155,12 @@ class Cauldron extends Solid{
 							$tile->setSplashPotion(false);
 							$tile->clearCustomColor();
 							$this->getLevel()->setBlock($this, $this, true);
-							$this->getLevel()->addSound(new ExplodeSound($this->add(0.5, 0, 0.5)));
+							$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_CAULDRON_EXPLODE);
 						}else{
 							$this->meta = 6;//fill
 							$tile->clearCustomColor();
 							$this->getLevel()->setBlock($this, $this, true);
-							$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
+							$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_SPLASH);
 						}
 						$this->update();
 					}
@@ -181,7 +179,7 @@ class Cauldron extends Solid{
 					}*/
 				}
 				$tile->setCustomColor($color);
-				$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
+				$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_SPLASH);
 				$this->update();
 				break;
 			case Item::LEATHER_CAP:
@@ -196,7 +194,7 @@ class Cauldron extends Solid{
 					/** @var Armor $newItem */
 					$newItem->setCustomColor($tile->getCustomColor());
 					$player->getInventory()->setItemInHand($newItem);
-					$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
+					$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_SPLASH);
 					if($this->isEmpty()){
 						$tile->clearCustomColor();
 					}
@@ -207,7 +205,7 @@ class Cauldron extends Solid{
 					/** @var Armor $newItem */
 					$newItem->clearCustomColor();
 					$player->getInventory()->setItemInHand($newItem);
-					$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
+					$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_SPLASH);
 				}
 				break;
 			case Item::POTION:
@@ -225,8 +223,8 @@ class Cauldron extends Solid{
 					if($player->isSurvival()){
 						$player->getInventory()->setItemInHand(Item::get(Item::GLASS_BOTTLE));
 					}
-					$this->getLevel()->addSound(new ExplodeSound($this->add(0.5, 0, 0.5)));
-				}elseif($item->getDamage() === Potion::WATER_BOTTLE){//水瓶 喷溅型水瓶
+					$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_CAULDRON_EXPLODE);
+				}elseif($item->getDamage() === Potion::WATER_BOTTLE){
 					$this->meta += 2;
 					if($this->meta > 0x06) $this->meta = 0x06;
 					$this->getLevel()->setBlock($this, $this, true);
@@ -236,7 +234,7 @@ class Cauldron extends Solid{
 					$tile->setPotionId(0xffff);
 					$tile->setSplashPotion(false);
 					$tile->clearCustomColor();
-					$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
+					$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_SPLASH);
 				}elseif(!$this->isFull()){
 					$this->meta += 2;
 					if($this->meta > 0x06) $this->meta = 0x06;
@@ -247,8 +245,7 @@ class Cauldron extends Solid{
 					if($player->isSurvival()){
 						$player->getInventory()->setItemInHand(Item::get(Item::GLASS_BOTTLE));
 					}
-					$color = Potion::getColor($item->getDamage());
-					$this->getLevel()->addSound(new SpellSound($this->add(0.5, 1, 0.5), $color[0], $color[1], $color[2]));
+					$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_CAST_SPELL);
 				}
 				break;
 			case Item::GLASS_BOTTLE:
@@ -273,8 +270,7 @@ class Cauldron extends Solid{
 					}
 					$this->getLevel()->setBlock($this, $this, true);
 					$this->addItem($item, $player, $result);
-					$color = Potion::getColor($result->getDamage());
-					$this->getLevel()->addSound(new SpellSound($this->add(0.5, 1, 0.5), $color[0], $color[1], $color[2]));
+					$this->getLevel()->broadcastLevelSoundEvent($tile, LevelSoundEventPacket::SOUND_CAST_SPELL);
 				}else{
 					$this->meta -= 2;
 					$this->getLevel()->setBlock($this, $this, true);
@@ -282,7 +278,7 @@ class Cauldron extends Solid{
 						$result = Item::get(Item::POTION, Potion::WATER_BOTTLE);
 						$this->addItem($item, $player, $result);
 					}
-					$this->getLevel()->addSound(new GraySplashSound($this->add(0.5, 1, 0.5)));
+					$this->getLevel()->broadcastLevelEvent($tile, LevelEventPacket::EVENT_CAULDRON_TAKE_WATER);
 				}
 				break;
 		}
